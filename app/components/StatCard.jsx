@@ -1,10 +1,6 @@
 import CopilotIcon from "./CopilotIcon";
 
-interface StatCardProps {
-  currentCount: number;
-}
-
-export default function StatCard({ currentCount }: StatCardProps) {
+export default function StatCard({ currentCount }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8 border-l-4 border-blue-600 dark:border-blue-400">
       <div className="text-center">
