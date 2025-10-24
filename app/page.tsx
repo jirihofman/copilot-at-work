@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import ChartClient from "@/app/components/ChartClient";
 import StatCard from "@/app/components/StatCard";
+import { fetchCopilotPRData } from "@/lib/server-actions";
 
 interface DataPoint {
   date: string;
@@ -8,25 +9,7 @@ interface DataPoint {
 }
 
 async function fetchData(): Promise<DataPoint[]> {
-  try {
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
-      : "http://localhost:3000";
-    
-    const response = await fetch(`${baseUrl}/api/fetch-copilot-prs`, {
-      next: { revalidate: 3600 }, // Revalidate every hour
-    });
-    
-    if (!response.ok) {
-      throw new Error("Failed to fetch data");
-    }
-    
-    const result = await response.json();
-    return result.data || [];
-  } catch (err) {
-    console.error("Error fetching data:", err);
-    return [];
-  }
+  return fetchCopilotPRData({ limit: 365 });
 }
 
 function LoadingFallback() {
