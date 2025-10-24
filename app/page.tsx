@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import ChartClient from "@/app/components/ChartClient";
 import StatCard from "@/app/components/StatCard";
+import CopilotIcon from "@/app/components/CopilotIcon";
 
 interface DataPoint {
   date: string;
@@ -55,10 +56,6 @@ export default async function Home() {
   return (
     <main className="min-h-screen p-8">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl font-bold mb-2">Copilot at Work</h1>
-        <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
-          Tracking merged Copilot PRs worldwide
-        </p>
 
         <StatCard currentCount={currentCount} />
 
