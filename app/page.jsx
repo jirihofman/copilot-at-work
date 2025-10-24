@@ -5,12 +5,7 @@ import { fetchCopilotPRData } from "@/lib/server-actions";
 
 export const dynamic = "force-dynamic";
 
-interface DataPoint {
-  date: string;
-  count: number;
-}
-
-async function fetchData(): Promise<DataPoint[]> {
+async function fetchData() {
   return fetchCopilotPRData({ limit: 365 });
 }
 

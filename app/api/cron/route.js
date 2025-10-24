@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { redis, COPILOT_PR_KEY, PRDataPoint } from "@/lib/redis";
+import { NextResponse } from "next/server";
+import { redis, COPILOT_PR_KEY } from "@/lib/redis";
 import { getCopilotPRCount } from "@/lib/github";
 
-export async function GET(request: NextRequest) {
+export async function GET(request) {
   try {
     // Verify authorization header for cron jobs using constant-time comparison
     const authHeader = request.headers.get("authorization");
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     const timestamp = Date.now();
     const date = new Date(timestamp).toISOString().split("T")[0]; // YYYY-MM-DD format
 
-    const dataPoint: PRDataPoint = {
+    const dataPoint = {
       date,
       count,
       timestamp,

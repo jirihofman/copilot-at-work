@@ -11,16 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-interface DataPoint {
-  date: string;
-  count: number;
-}
-
-interface DemoChartProps {
-  data: DataPoint[];
-}
-
-export default function DemoChart({ data }: DemoChartProps) {
+export default function DemoChart({ data }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
       <h2 className="text-2xl font-semibold mb-4">PR Count Over Time</h2>

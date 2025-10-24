@@ -12,16 +12,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-interface DataPoint {
-  date: string;
-  count: number;
-}
-
-interface ChartClientProps {
-  data: DataPoint[];
-}
-
-export default function ChartClient({ data }: ChartClientProps) {
+export default function ChartClient({ data }) {
   const [isFetching, setIsFetching] = useState(false);
   const isDevMode = process.env.NODE_ENV === "development";
 
