@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const limitValue = Math.min(Math.max(limit, 1), 1000); // Cap at 1000 records
     
     // Get recent data points from Redis sorted set (most recent first)
-    const data = await redis.zrange<string[]>(COPILOT_PR_KEY, -limitValue, -1, {
+    const data = await redis.zrange<any[]>(COPILOT_PR_KEY, -limitValue, -1, {
       withScores: false,
     });
 
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Parse the JSON strings back to objects
-    const parsedData: PRDataPoint[] = data.map((item) => JSON.parse(item));
+    const parsedData: PRDataPoint[] = data;
 
     // Sort by timestamp to ensure correct order
     parsedData.sort((a, b) => a.timestamp - b.timestamp);

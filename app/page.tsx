@@ -12,8 +12,13 @@ export default function Home() {
   const [data, setData] = useState<DataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDevMode, setIsDevMode] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
 
   useEffect(() => {
+    // Check if we're in development mode
+    setIsDevMode(process.env.NODE_ENV === 'development');
+    
     async function fetchData() {
       try {
         const response = await fetch("/api/fetch-copilot-prs");
@@ -31,6 +36,39 @@ export default function Home() {
 
     fetchData();
   }, []);
+
+  const handleDevFetch = async () => {
+    setIsFetching(true);
+    try {
+      const response = await fetch("/api/cron", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || ''}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to trigger cron job");
+      }
+      
+      const result = await response.json();
+      console.log("Cron job result:", result);
+      
+      // Refresh the data after successful cron run
+      const dataResponse = await fetch("/api/fetch-copilot-prs");
+      if (dataResponse.ok) {
+        const dataResult = await dataResponse.json();
+        setData(dataResult.data || []);
+      }
+      
+      alert(`Successfully fetched! New count: ${result.data?.count || 'N/A'}`);
+    } catch (err) {
+      console.error("Error triggering cron:", err);
+      alert(`Error: ${err instanceof Error ? err.message : "Failed to trigger cron job"}`);
+    } finally {
+      setIsFetching(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -98,6 +136,19 @@ export default function Home() {
         ) : (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 text-center">
             <p className="text-gray-600 dark:text-gray-400">No data available yet. Check back after the first cron job runs.</p>
+          </div>
+        )}
+
+        {isDevMode && (
+          <div className="mt-8 text-center">
+            <button
+              onClick={handleDevFetch}
+              disabled={isFetching}
+              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white font-semibold rounded-lg shadow-md transition-colors duration-200"
+            >
+              {isFetching ? "Fetching..." : "🔄 Run GitHub Query (Dev Only)"}
+            </button>
+            <p className="text-xs text-gray-500 mt-2">Development mode - manually trigger data fetch</p>
           </div>
         )}
 
