@@ -14,7 +14,7 @@ import {
 export default function DemoChart({ data }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-      <h2 className="text-2xl font-semibold mb-4">PR Count Over Time</h2>
+      <h2 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300">PR Count Over Time</h2>
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />

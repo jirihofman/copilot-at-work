@@ -1,7 +1,9 @@
 import { Suspense } from "react";
 import ChartClient from "@/app/components/ChartClient";
 import StatCard from "@/app/components/StatCard";
+import TrendsCard from "@/app/components/TrendsCard";
 import { fetchCopilotPRData } from "@/lib/server-actions";
+import { calculateTrends } from "@/lib/trends";
 
 export const dynamic = "force-dynamic";
 
@@ -30,13 +32,16 @@ function EmptyState() {
 export default async function Home() {
   const data = await fetchData();
   const currentCount = data.length > 0 ? data[data.length - 1].count : 0;
+  const trends = calculateTrends(data);
   const isDevMode = process.env.NODE_ENV === "development";
 
   return (
-    <main className="min-h-screen p-8">
+    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 p-8">
       <div className="max-w-6xl mx-auto">
 
         <StatCard currentCount={currentCount} />
+
+        <TrendsCard weeklyChange={trends.weeklyChange} monthlyChange={trends.monthlyChange} />
 
         <Suspense fallback={<LoadingFallback />}>
           {data.length > 0 ? (
@@ -48,13 +53,13 @@ export default async function Home() {
 
         {isDevMode && (
           <div className="mt-8 text-center">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-400">
               Development mode - use the dev button in client component
             </p>
           </div>
         )}
 
-        <div className="mt-8 text-center text-sm text-gray-500">
+        <div className="mt-8 text-center text-xs text-gray-400">
           <p>Data is updated daily via cron job</p>
         </div>
       </div>

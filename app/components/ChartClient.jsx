@@ -50,7 +50,7 @@ export default function ChartClient({ data }) {
   return (
     <>
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-semibold mb-4">PR Count Over Time</h2>
+        <h2 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300">PR Count Over Time</h2>
         <ResponsiveContainer width="100%" height={400}>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -83,7 +83,7 @@ export default function ChartClient({ data }) {
           >
             {isFetching ? "Fetching..." : "🔄 Run GitHub Query (Dev Only)"}
           </button>
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-gray-400 mt-2">
             Development mode - manually trigger data fetch
           </p>
         </div>

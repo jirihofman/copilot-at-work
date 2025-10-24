@@ -2,19 +2,28 @@ import CopilotIcon from "./CopilotIcon";
 
 export default function StatCard({ currentCount }) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8 border-l-4 border-blue-600 dark:border-blue-400">
-      <div className="text-center">
-        <div className="flex items-center justify-center mb-4">
-          <div className="text-blue-600 dark:text-blue-400">
-            <CopilotIcon size={48} />
+    <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-500 to-purple-600 rounded-2xl shadow-2xl p-12 mb-8">
+      <div className="absolute inset-0 bg-black opacity-5"></div>
+      <div className="relative text-center">
+        <div className="flex items-center justify-center mb-6">
+          <div className="text-white drop-shadow-lg">
+            <CopilotIcon size={64} />
           </div>
         </div>
-        <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 font-medium uppercase tracking-wide">
-          Total Merged Copilot PRs Worldwide - Public
+        <h1 className="text-5xl md:text-6xl font-black mb-4 text-white drop-shadow-lg">
+          Copilot at Work
+        </h1>
+        <p className="text-white/90 text-lg md:text-xl mb-8 font-medium">
+          Tracking merged Copilot PRs worldwide
         </p>
-        <p className="text-7xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-300 bg-clip-text text-transparent">
-          {currentCount}
-        </p>
+        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 inline-block">
+          <p className="text-white/80 text-xs mb-2 font-medium uppercase tracking-wider">
+            Total Merged PRs (Public)
+          </p>
+          <p className="text-7xl md:text-8xl font-black text-white drop-shadow-lg">
+            {currentCount.toLocaleString()}
+          </p>
+        </div>
       </div>
     </div>
   );
