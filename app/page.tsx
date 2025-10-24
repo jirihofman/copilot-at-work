@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import ChartClient from "@/app/components/ChartClient";
 import StatCard from "@/app/components/StatCard";
-import CopilotIcon from "@/app/components/CopilotIcon";
 
 interface DataPoint {
   date: string;
