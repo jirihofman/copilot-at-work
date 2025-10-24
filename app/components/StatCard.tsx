@@ -14,7 +14,7 @@ export default function StatCard({ currentCount }: StatCardProps) {
           </div>
         </div>
         <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 font-medium uppercase tracking-wide">
-          Total Merged Copilot PRs Worldwide
+          Total Merged Copilot PRs Worldwide - Public
         </p>
         <p className="text-7xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-300 bg-clip-text text-transparent">
           {currentCount}
