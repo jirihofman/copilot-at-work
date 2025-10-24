@@ -30,15 +30,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (!process.env.GITHUB_USERNAME) {
-      return NextResponse.json(
-        { error: "GITHUB_USERNAME not configured" },
-        { status: 500 }
-      );
-    }
-
-    // Fetch current count from GitHub
-    const count = await getCopilotPRCount(process.env.GITHUB_USERNAME);
+    // Fetch current count from GitHub (worldwide)
+    const count = await getCopilotPRCount();
 
     // Create data point
     const timestamp = Date.now();

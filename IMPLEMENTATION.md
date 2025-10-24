@@ -15,6 +15,7 @@ All requirements from the problem statement have been implemented:
 5. ✅ **Graph from beginning of tracking** - Interactive line chart with all historical data
 6. ✅ **Framework choice** - Selected Next.js 16 with App Router
 7. ✅ **Single page app** - Homepage displays everything needed
+8. ✅ **Worldwide tracking** - Tracks all Copilot PRs globally, not limited to a specific account
 
 ### 📁 Project Structure
 
@@ -46,8 +47,8 @@ copilot-at-work/
 
 **GitHub Integration:**
 - GraphQL query searches for `is:pr is:merged author:copilot-swe-agent[bot]`
-- Username validation to prevent query injection
-- Fetches total count of merged Copilot PRs
+- Fetches total count of merged Copilot PRs worldwide
+- No user-specific filtering
 
 **Data Storage:**
 - Redis sorted set stores daily snapshots
@@ -81,7 +82,6 @@ copilot-at-work/
 2. **Configure Environment Variables in Vercel:**
    ```
    GITHUB_TOKEN=<your_github_token>
-   GITHUB_USERNAME=jirihofman
    UPSTASH_REDIS_REST_URL=<from_upstash_console>
    UPSTASH_REDIS_REST_TOKEN=<from_upstash_console>
    CRON_SECRET=<random_secure_string>
@@ -106,7 +106,7 @@ copilot-at-work/
 
 **Daily Flow:**
 1. Vercel cron triggers `/api/cron` at midnight UTC
-2. Endpoint fetches current PR count from GitHub
+2. Endpoint fetches current PR count from GitHub (all Copilot PRs worldwide)
 3. Data point (date, count, timestamp) is stored in Redis
 4. Redis sorted set maintains time-ordered history
 
