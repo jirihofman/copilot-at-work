@@ -1,10 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { redis, COPILOT_PR_KEY, PRDataPoint } from "@/lib/redis";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // Get all data points from Redis sorted set
-    const data = await redis.zrange<string[]>(COPILOT_PR_KEY, 0, -1, {
+    // Support pagination to limit data returned
+    const searchParams = request.nextUrl.searchParams;
+    const limit = parseInt(searchParams.get("limit") || "365", 10); // Default to 1 year of daily data
+    const limitValue = Math.min(Math.max(limit, 1), 1000); // Cap at 1000 records
+    
+    // Get recent data points from Redis sorted set (most recent first)
+    const data = await redis.zrange<string[]>(COPILOT_PR_KEY, -limitValue, -1, {
       withScores: false,
     });
 

@@ -4,9 +4,26 @@ import { getCopilotPRCount } from "@/lib/github";
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify authorization header for cron jobs
+    // Verify authorization header for cron jobs using constant-time comparison
     const authHeader = request.headers.get("authorization");
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;
+    
+    if (!authHeader || authHeader.length !== expectedAuth.length) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+    
+    // Constant-time comparison to prevent timing attacks
+    let isValid = true;
+    for (let i = 0; i < expectedAuth.length; i++) {
+      if (authHeader[i] !== expectedAuth[i]) {
+        isValid = false;
+      }
+    }
+    
+    if (!isValid) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }

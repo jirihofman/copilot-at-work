@@ -9,6 +9,11 @@ export async function getCopilotPRCount(username: string): Promise<number> {
     throw new Error("GITHUB_TOKEN must be set");
   }
 
+  // Validate username format (alphanumeric, hyphens, max 39 chars)
+  if (!/^[a-zA-Z0-9-]{1,39}$/.test(username)) {
+    throw new Error("Invalid GitHub username format");
+  }
+
   const query = `is:pr is:merged author:copilot-swe-agent[bot] involves:${username}`;
 
   try {
