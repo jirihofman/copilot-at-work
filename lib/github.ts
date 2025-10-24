@@ -1,20 +1,14 @@
 /**
- * Fetches the count of merged pull requests created by Copilot for a given user.
+ * Fetches the count of merged pull requests created by Copilot worldwide.
  * Uses GitHub GraphQL API to search for PRs authored by copilot-swe-agent[bot].
- * @param username GitHub username
- * @returns Number of merged Copilot PRs across all repositories
+ * @returns Number of merged Copilot PRs across all repositories worldwide
  */
-export async function getCopilotPRCount(username: string): Promise<number> {
+export async function getCopilotPRCount(): Promise<number> {
   if (!process.env.GITHUB_TOKEN) {
     throw new Error("GITHUB_TOKEN must be set");
   }
 
-  // Validate username format (alphanumeric, hyphens, max 39 chars)
-  if (!/^[a-zA-Z0-9-]{1,39}$/.test(username)) {
-    throw new Error("Invalid GitHub username format");
-  }
-
-  const query = `is:pr is:merged author:copilot-swe-agent[bot] involves:${username}`;
+  const query = `is:pr is:merged author:copilot-swe-agent[bot]`;
 
   try {
     const res = await fetch("https://api.github.com/graphql", {
