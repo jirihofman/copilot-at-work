@@ -3,6 +3,8 @@ import ChartClient from "@/app/components/ChartClient";
 import StatCard from "@/app/components/StatCard";
 import { fetchCopilotPRData } from "@/lib/server-actions";
 
+export const dynamic = "force-dynamic";
+
 interface DataPoint {
   date: string;
   count: number;
