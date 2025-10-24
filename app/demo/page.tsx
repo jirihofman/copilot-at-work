@@ -1,6 +1,5 @@
-"use client";
-
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import DemoChart from "@/app/components/DemoChart";
+import StatCard from "@/app/components/StatCard";
 
 // Mock data for demonstration
 const mockData = [
@@ -27,42 +26,9 @@ export default function DemoPage() {
           Tracking merged Copilot PRs worldwide
         </p>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
-          <div className="text-center">
-            <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Total Merged Copilot PRs Worldwide</p>
-            <p className="text-6xl font-bold text-blue-600 dark:text-blue-400">{currentCount}</p>
-          </div>
-        </div>
+        <StatCard currentCount={currentCount} />
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-semibold mb-4">PR Count Over Time</h2>
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={mockData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="date" 
-                tick={{ fill: 'currentColor' }}
-              />
-              <YAxis 
-                tick={{ fill: 'currentColor' }}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'var(--background)', 
-                  border: '1px solid #ccc' 
-                }}
-              />
-              <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="count" 
-                stroke="#2563eb" 
-                strokeWidth={2}
-                name="Merged PRs"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        <DemoChart data={mockData} />
 
         <div className="mt-8 text-center text-sm text-gray-500">
           <p>Data is updated daily via cron job</p>
