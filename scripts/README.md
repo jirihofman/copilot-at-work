@@ -27,7 +27,10 @@ node scripts/backfill.js 2024-01-15
 
 ### Multiple Dates (Loop)
 
-To backfill data for multiple consecutive dates, you can use a shell loop:
+To backfill data for multiple consecutive dates, you can use a shell loop.
+
+**Reference Example:**
+See `example-loop.sh` for a working example script.
 
 **Bash/Zsh:**
 ```bash
