@@ -47,7 +47,7 @@ export default function DemoPage() {
   const monthlyChange = ((currentCount - monthOldCount) / monthOldCount) * 100;
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 p-8">
+    <main className="min-h-screen bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 p-8">
       <div className="max-w-6xl mx-auto">
         <StatCard currentCount={currentCount} />
 
@@ -56,7 +56,7 @@ export default function DemoPage() {
         <DemoChart data={mockData} />
 
         <div className="mt-8 text-center text-xs text-gray-400">
-          <p>Data is updated daily via cron job</p>
+          <p>Data is updated daily.</p>
           <p className="mt-2">This is a demo page with mock data</p>
         </div>
       </div>

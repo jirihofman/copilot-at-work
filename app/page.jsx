@@ -60,7 +60,7 @@ export default async function Home() {
         )}
 
         <div className="mt-8 text-center text-xs text-gray-400">
-          <p>Data is updated daily via cron job</p>
+          <p>Data is updated daily.</p>
         </div>
       </div>
     </main>
