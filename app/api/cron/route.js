@@ -5,8 +5,10 @@ import { cronRateLimiter } from "@/lib/rate-limit";
 
 export async function GET(request) {
   try {
-    // Apply rate limiting based on IP address
-    const ip = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "127.0.0.1";
+    // Apply rate limiting based on IP address (before auth to prevent brute force attacks)
+    // Extract the first IP from x-forwarded-for in case of proxy chains
+    const forwardedFor = request.headers.get("x-forwarded-for");
+    const ip = forwardedFor ? forwardedFor.split(",")[0].trim() : request.headers.get("x-real-ip") ?? "127.0.0.1";
     const { success: rateLimitSuccess, limit, reset, remaining } = await cronRateLimiter.limit(ip);
     
     if (!rateLimitSuccess) {
