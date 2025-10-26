@@ -14,44 +14,11 @@ import {
 import { calculateDailyPRCounts } from "@/lib/chart-utils";
 
 export default function ChartClient({ data }) {
-  const [isFetching, setIsFetching] = useState(false);
   const [chartType, setChartType] = useState("cumulative"); // "cumulative" or "daily"
-  const isDevMode = process.env.NODE_ENV === "development";
 
   // Calculate daily data from cumulative data
   const dailyData = calculateDailyPRCounts(data);
   const chartData = chartType === "cumulative" ? data : dailyData;
-
-  const handleDevFetch = async () => {
-    setIsFetching(true);
-    try {
-      const response = await fetch("/api/cron", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || ""}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to trigger cron job");
-      }
-
-      const result = await response.json();
-      console.log("Cron job result:", result);
-
-      alert(`Successfully fetched! New count: ${result.data?.count || "N/A"}`);
-
-      // Reload the page to see updated data
-      window.location.reload();
-    } catch (err) {
-      console.error("Error triggering cron:", err);
-      alert(
-        `Error: ${err instanceof Error ? err.message : "Failed to trigger cron job"}`
-      );
-    } finally {
-      setIsFetching(false);
-    }
-  };
 
   return (
     <>
@@ -107,21 +74,6 @@ export default function ChartClient({ data }) {
           </LineChart>
         </ResponsiveContainer>
       </div>
-
-      {isDevMode && (
-        <div className="mt-8 text-center">
-          <button
-            onClick={handleDevFetch}
-            disabled={isFetching}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white font-semibold rounded-lg shadow-md transition-colors duration-200"
-          >
-            {isFetching ? "Fetching..." : "🔄 Run GitHub Query (Dev Only)"}
-          </button>
-          <p className="text-xs text-gray-400 mt-2">
-            Development mode - manually trigger data fetch
-          </p>
-        </div>
-      )}
     </>
   );
 }

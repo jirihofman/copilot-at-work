@@ -14,7 +14,7 @@ A Next.js application that tracks the number of merged Copilot PRs worldwide ove
 
 ### Prerequisites
 
-1. A GitHub Personal Access Token with appropriate permissions
+1. A GitHub Personal Access Token with `public_repo` read access (minimum required permissions)
 2. An Upstash Redis instance (free tier available)
 3. A Vercel account (for deployment)
 
@@ -84,6 +84,17 @@ Cron endpoint that fetches the current PR count from GitHub (worldwide) and stor
 2. **GitHub API**: The endpoint queries GitHub's GraphQL API for merged PRs authored by `copilot-swe-agent[bot]` worldwide
 3. **Redis Storage**: The count is stored in Upstash Redis with a timestamp
 4. **Data Visualization**: The homepage fetches all historical data and displays it in an interactive chart
+
+## Security
+
+This repository follows security best practices:
+
+- All secrets are stored in environment variables, never in code
+- The cron endpoint is protected by authentication (`CRON_SECRET`)
+- No sensitive data is exposed to the client-side bundle
+- See [SECURITY.md](SECURITY.md) for detailed security guidelines and vulnerability reporting
+
+**Important**: Never use `NEXT_PUBLIC_` prefix for secrets or tokens, as these are embedded in the client-side JavaScript bundle and visible to anyone.
 
 ## License
 
