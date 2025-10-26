@@ -90,7 +90,7 @@ Cron endpoint that fetches the current PR count from GitHub (worldwide) and stor
 This repository follows security best practices:
 
 - All secrets are stored in environment variables, never in code
-- The cron endpoint is protected by authentication (`CRON_SECRET`)
+- The cron endpoint is protected by authentication (`CRON_SECRET`) and rate limiting (10 requests/hour per IP)
 - No sensitive data is exposed to the client-side bundle
 - See [SECURITY.md](SECURITY.md) for detailed security guidelines and vulnerability reporting
 

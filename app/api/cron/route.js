@@ -1,9 +1,33 @@
 import { NextResponse } from "next/server";
 import { redis, COPILOT_PR_KEY } from "@/lib/redis";
 import { getCopilotPRCount } from "@/lib/github";
+import { cronRateLimiter } from "@/lib/rate-limit";
 
 export async function GET(request) {
   try {
+    // Apply rate limiting based on IP address
+    const ip = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "127.0.0.1";
+    const { success: rateLimitSuccess, limit, reset, remaining } = await cronRateLimiter.limit(ip);
+    
+    if (!rateLimitSuccess) {
+      return NextResponse.json(
+        { 
+          error: "Too many requests", 
+          limit,
+          remaining,
+          reset: new Date(reset).toISOString()
+        },
+        { 
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": limit.toString(),
+            "X-RateLimit-Remaining": remaining.toString(),
+            "X-RateLimit-Reset": reset.toString(),
+          }
+        }
+      );
+    }
+
     // Verify authorization header for cron jobs using constant-time comparison
     const authHeader = request.headers.get("authorization");
     const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;

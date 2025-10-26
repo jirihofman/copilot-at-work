@@ -38,7 +38,7 @@ This application uses several sensitive environment variables that must be kept 
 
 2. **Cron endpoint security**: The `/api/cron` endpoint is protected by the `CRON_SECRET` environment variable. Only Vercel's cron service should have access to this secret.
 
-3. **Rate limiting**: Consider implementing rate limiting on the cron endpoint for additional protection against abuse.
+3. **Rate limiting**: The `/api/cron` endpoint has rate limiting implemented (10 requests per hour per IP) using Upstash Rate Limiter to protect against abuse.
 
 4. **Git history**: Never commit `.env`, `.env.local`, or any files containing secrets. These files are already listed in `.gitignore`.
 
