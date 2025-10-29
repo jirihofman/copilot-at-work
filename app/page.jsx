@@ -39,7 +39,7 @@ export default async function Home() {
   const isDevMode = process.env.NODE_ENV === "development";
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 md:p-8">
+    <main className="min-h-screen bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 md:p-8">
       <div className="max-w-6xl mx-auto">
 
         <StatCard currentCount={currentCopilotCount} />
