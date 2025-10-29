@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { redis, COPILOT_PR_KEY } from "@/lib/redis";
-import { getCopilotPRCount } from "@/lib/github";
+import { redis, COPILOT_PR_KEY, CLAUDE_PR_KEY } from "@/lib/redis";
+import { getCopilotPRCount, getClaudePRCount } from "@/lib/github";
 import { cronRateLimiter } from "@/lib/rate-limit";
 
 export async function GET(request) {
@@ -56,30 +56,45 @@ export async function GET(request) {
       );
     }
 
-    // Fetch current count from GitHub (worldwide)
-    const count = await getCopilotPRCount();
+    // Fetch current count from GitHub (worldwide) for both agents
+    const copilotCount = await getCopilotPRCount();
+    const claudeCount = await getClaudePRCount();
 
     // Create data point
     const timestamp = Date.now();
     const date = new Date(timestamp).toISOString().split("T")[0]; // YYYY-MM-DD format
 
-    const dataPoint = {
+    const copilotDataPoint = {
       date,
-      count,
+      count: copilotCount,
+      timestamp,
+    };
+
+    const claudeDataPoint = {
+      date,
+      count: claudeCount,
       timestamp,
     };
 
     // Store in Redis sorted set (using timestamp as score for sorting)
     await redis.zadd(COPILOT_PR_KEY, {
       score: timestamp,
-      member: JSON.stringify(dataPoint),
+      member: JSON.stringify(copilotDataPoint),
     });
 
-    console.log(`Stored data point: ${date} - ${count} PRs`);
+    await redis.zadd(CLAUDE_PR_KEY, {
+      score: timestamp,
+      member: JSON.stringify(claudeDataPoint),
+    });
+
+    console.log(`Stored data points: ${date} - Copilot: ${copilotCount} PRs, Claude: ${claudeCount} PRs`);
 
     return NextResponse.json({
       success: true,
-      data: dataPoint,
+      data: {
+        copilot: copilotDataPoint,
+        claude: claudeDataPoint,
+      },
     });
   } catch (error) {
     console.error("Error in cron job:", error);
