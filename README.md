@@ -1,6 +1,6 @@
 # Copilot at Work - PR Tracker
 
-A Next.js application that tracks the number of merged PRs from AI coding agents (Copilot and Claude) worldwide over time using GitHub's GraphQL API and Redis for data storage.
+A Next.js application that tracks merged PRs from Copilot and other AI coding agents worldwide over time using GitHub's GraphQL API and Redis for data storage.
 
 ## Features
 

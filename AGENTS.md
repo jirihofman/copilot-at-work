@@ -25,7 +25,7 @@ This document provides an overview of the Copilot agents used in the `Copilot at
 
 ## Related Files
 
-- **API Route**: `app/api/fetch-copilot-prs/route.ts`
+- **Server Actions**: `lib/server-actions.js`
   - Fetches historical PR count data from Redis.
 - **Cron Job**: `app/api/cron/route.js`
   - Updates PR count data daily for both agents.
