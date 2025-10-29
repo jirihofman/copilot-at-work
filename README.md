@@ -1,11 +1,12 @@
 # Copilot at Work - PR Tracker
 
-A Next.js application that tracks the number of merged Copilot PRs worldwide over time using GitHub's GraphQL API and Redis for data storage.
+A Next.js application that tracks the number of merged PRs from AI coding agents (Copilot and Claude) worldwide over time using GitHub's GraphQL API and Redis for data storage.
 
 ## Features
 
-- 📊 Real-time tracking of merged Copilot PRs worldwide
-- 📈 Interactive chart showing PR count over time
+- 📊 Real-time tracking of merged Copilot and Claude PRs worldwide
+- 📈 Interactive chart showing PR count over time for both agents
+- 🎨 Dual-line visualization: blue for Copilot, orange for Claude
 - ⏰ Daily automated updates via cron job
 - 💾 Data persistence using Upstash Redis
 - 🚀 Deployed on Vercel
@@ -81,9 +82,9 @@ Cron endpoint that fetches the current PR count from GitHub (worldwide) and stor
 ## How It Works
 
 1. **Daily Cron Job**: A Vercel cron job runs daily, calling `/api/cron`
-2. **GitHub API**: The endpoint queries GitHub's GraphQL API for merged PRs authored by `copilot-swe-agent[bot]` worldwide
-3. **Redis Storage**: The count is stored in Upstash Redis with a timestamp
-4. **Data Visualization**: The homepage fetches all historical data and displays it in an interactive chart
+2. **GitHub API**: The endpoint queries GitHub's GraphQL API for merged PRs authored by both `copilot-swe-agent[bot]` and `claude-swe-agent[bot]` worldwide
+3. **Redis Storage**: The counts are stored in Upstash Redis with timestamps (separate keys for each agent)
+4. **Data Visualization**: The homepage fetches all historical data and displays both agents in an interactive chart with different colors (blue for Copilot, orange for Claude)
 
 ## Security
 

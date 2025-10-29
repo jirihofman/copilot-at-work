@@ -8,20 +8,31 @@ This document provides an overview of the Copilot agents used in the `Copilot at
 - **Purpose**: Tracks merged pull requests worldwide.
 - **Integration**: Queries GitHub's GraphQL API for PR data.
 - **Usage**: Data fetched by this agent is stored in Upstash Redis and visualized in the application.
+- **Chart Color**: Blue (#2563eb)
+
+### `claude-swe-agent[bot]`
+- **Purpose**: Tracks merged pull requests worldwide.
+- **Integration**: Queries GitHub's GraphQL API for PR data.
+- **Usage**: Data fetched by this agent is stored in Upstash Redis and visualized in the application.
+- **Chart Color**: Orange (#f97316)
 
 ## How Agents Work
 
 1. **Daily Cron Job**: The `/api/cron` endpoint is triggered daily by a Vercel cron job.
-2. **GitHub API Query**: The agent queries GitHub for merged PRs authored by `copilot-swe-agent[bot]`.
-3. **Data Storage**: The fetched data is stored in Upstash Redis with a timestamp.
-4. **Visualization**: The application fetches historical data and displays it in an interactive chart.
+2. **GitHub API Query**: The endpoint queries GitHub for merged PRs authored by both `copilot-swe-agent[bot]` and `claude-swe-agent[bot]`.
+3. **Data Storage**: The fetched data is stored in Upstash Redis with a timestamp (separate keys for each agent).
+4. **Visualization**: The application fetches historical data for both agents and displays them in an interactive chart with different colors.
 
 ## Related Files
 
 - **API Route**: `app/api/fetch-copilot-prs/route.ts`
   - Fetches historical PR count data from Redis.
-- **Cron Job**: `app/api/cron/route.ts`
-  - Updates PR count data daily.
+- **Cron Job**: `app/api/cron/route.js`
+  - Updates PR count data daily for both agents.
+- **GitHub API**: `lib/github.js`
+  - Contains functions to fetch PR counts for both agents.
+- **Chart Component**: `app/components/ChartClient.jsx`
+  - Displays both agents' data in the same chart.
 
 ## Environment Variables
 
