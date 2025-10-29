@@ -11,14 +11,20 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { calculateDailyPRCounts } from "@/lib/chart-utils";
+import { calculateDailyPRCounts, mergeTwoAgentData } from "@/lib/chart-utils";
 
-export default function ChartClient({ data }) {
+export default function ChartClient({ copilotData, claudeData }) {
   const [chartType, setChartType] = useState("cumulative"); // "cumulative" or "daily"
 
-  // Calculate daily data from cumulative data
-  const dailyData = calculateDailyPRCounts(data);
-  const chartData = chartType === "cumulative" ? data : dailyData;
+  // Calculate daily data from cumulative data for both agents
+  const copilotDailyData = calculateDailyPRCounts(copilotData);
+  const claudeDailyData = calculateDailyPRCounts(claudeData);
+  
+  // Merge the data sets by date
+  const cumulativeChartData = mergeTwoAgentData(copilotData, claudeData);
+  const dailyChartData = mergeTwoAgentData(copilotDailyData, claudeDailyData);
+  
+  const chartData = chartType === "cumulative" ? cumulativeChartData : dailyChartData;
 
   return (
     <>
@@ -66,10 +72,17 @@ export default function ChartClient({ data }) {
             <Legend />
             <Line
               type="monotone"
-              dataKey="count"
+              dataKey="copilotCount"
               stroke="#2563eb"
               strokeWidth={2}
-              name={chartType === "cumulative" ? "Total Merged PRs" : "PRs per Day"}
+              name={chartType === "cumulative" ? "Copilot Total PRs" : "Copilot PRs per Day"}
+            />
+            <Line
+              type="monotone"
+              dataKey="claudeCount"
+              stroke="#f97316"
+              strokeWidth={2}
+              name={chartType === "cumulative" ? "Claude Total PRs" : "Claude PRs per Day"}
             />
           </LineChart>
         </ResponsiveContainer>
