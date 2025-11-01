@@ -11,7 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { calculateDailyPRCounts } from "@/lib/chart-utils";
+import { calculateDailyPRCounts, filterDataByTimeRange } from "@/lib/chart-utils";
 
 export default function DemoChart({ data }) {
   const [chartType, setChartType] = useState("cumulative"); // "cumulative" or "daily"
@@ -21,29 +21,13 @@ export default function DemoChart({ data }) {
   const dailyData = calculateDailyPRCounts(data);
   
   // Filter data based on time range
-  const filterDataByTimeRange = (chartData) => {
-    if (timeRange === "all") return chartData;
-    
-    const now = new Date();
-    const cutoffDate = new Date();
-    
-    if (timeRange === "week") {
-      cutoffDate.setDate(now.getDate() - 7);
-    } else if (timeRange === "month") {
-      cutoffDate.setDate(now.getDate() - 30);
-    }
-    
-    const cutoffString = cutoffDate.toISOString().split('T')[0];
-    return chartData.filter(item => item.date >= cutoffString);
-  };
-  
   const filteredCumulativeData = useMemo(
-    () => filterDataByTimeRange(data),
+    () => filterDataByTimeRange(data, timeRange),
     [data, timeRange]
   );
   
   const filteredDailyData = useMemo(
-    () => filterDataByTimeRange(dailyData),
+    () => filterDataByTimeRange(dailyData, timeRange),
     [dailyData, timeRange]
   );
   

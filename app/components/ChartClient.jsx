@@ -11,7 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { calculateDailyPRCounts, mergeTwoAgentData } from "@/lib/chart-utils";
+import { calculateDailyPRCounts, mergeTwoAgentData, filterDataByTimeRange } from "@/lib/chart-utils";
 
 export default function ChartClient({ copilotData, claudeData }) {
   const [chartType, setChartType] = useState("cumulative"); // "cumulative" or "daily"
@@ -26,29 +26,13 @@ export default function ChartClient({ copilotData, claudeData }) {
   const dailyChartData = mergeTwoAgentData(copilotDailyData, claudeDailyData);
   
   // Filter data based on time range
-  const filterDataByTimeRange = (data) => {
-    if (timeRange === "all") return data;
-    
-    const now = new Date();
-    const cutoffDate = new Date();
-    
-    if (timeRange === "week") {
-      cutoffDate.setDate(now.getDate() - 7);
-    } else if (timeRange === "month") {
-      cutoffDate.setDate(now.getDate() - 30);
-    }
-    
-    const cutoffString = cutoffDate.toISOString().split('T')[0];
-    return data.filter(item => item.date >= cutoffString);
-  };
-  
   const filteredCumulativeData = useMemo(
-    () => filterDataByTimeRange(cumulativeChartData),
+    () => filterDataByTimeRange(cumulativeChartData, timeRange),
     [cumulativeChartData, timeRange]
   );
   
   const filteredDailyData = useMemo(
-    () => filterDataByTimeRange(dailyChartData),
+    () => filterDataByTimeRange(dailyChartData, timeRange),
     [dailyChartData, timeRange]
   );
   
