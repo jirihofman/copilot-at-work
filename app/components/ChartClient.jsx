@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   LineChart,
   Line,
@@ -11,10 +11,11 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { calculateDailyPRCounts, mergeTwoAgentData } from "@/lib/chart-utils";
+import { calculateDailyPRCounts, mergeTwoAgentData, filterDataByTimeRange } from "@/lib/chart-utils";
 
 export default function ChartClient({ copilotData, claudeData }) {
   const [chartType, setChartType] = useState("cumulative"); // "cumulative" or "daily"
+  const [timeRange, setTimeRange] = useState("all"); // "all", "week", "month"
 
   // Calculate daily data from cumulative data for both agents
   const copilotDailyData = calculateDailyPRCounts(copilotData);
@@ -24,36 +25,82 @@ export default function ChartClient({ copilotData, claudeData }) {
   const cumulativeChartData = mergeTwoAgentData(copilotData, claudeData);
   const dailyChartData = mergeTwoAgentData(copilotDailyData, claudeDailyData);
   
-  const chartData = chartType === "cumulative" ? cumulativeChartData : dailyChartData;
+  // Filter data based on time range
+  const filteredCumulativeData = useMemo(
+    () => filterDataByTimeRange(cumulativeChartData, timeRange),
+    [cumulativeChartData, timeRange]
+  );
+  
+  const filteredDailyData = useMemo(
+    () => filterDataByTimeRange(dailyChartData, timeRange),
+    [dailyChartData, timeRange]
+  );
+  
+  const chartData = chartType === "cumulative" ? filteredCumulativeData : filteredDailyData;
 
   return (
     <>
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-          <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
-            {chartType === "cumulative" ? "Total PR Count Over Time" : "Daily PR Count"}
-          </h2>
+        <div className="flex flex-col gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+              {chartType === "cumulative" ? "Total PR Count Over Time" : "Daily PR Count"}
+            </h2>
+            
+            <div className="flex gap-2">
+              <button
+                onClick={() => setChartType("cumulative")}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  chartType === "cumulative"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                }`}
+              >
+                Cumulative
+              </button>
+              <button
+                onClick={() => setChartType("daily")}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  chartType === "daily"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                }`}
+              >
+                Daily
+              </button>
+            </div>
+          </div>
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
-              onClick={() => setChartType("cumulative")}
+              onClick={() => setTimeRange("all")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                chartType === "cumulative"
+                timeRange === "all"
                   ? "bg-blue-600 text-white"
                   : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
               }`}
             >
-              Cumulative
+              All Time
             </button>
             <button
-              onClick={() => setChartType("daily")}
+              onClick={() => setTimeRange("week")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                chartType === "daily"
+                timeRange === "week"
                   ? "bg-blue-600 text-white"
                   : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
               }`}
             >
-              Daily
+              Last Week
+            </button>
+            <button
+              onClick={() => setTimeRange("month")}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                timeRange === "month"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+              }`}
+            >
+              Last Month
             </button>
           </div>
         </div>
