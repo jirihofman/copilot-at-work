@@ -18,7 +18,7 @@ This document provides an overview of the Copilot agents used in the `Copilot at
 
 ## How Agents Work
 
-1. **Daily Cron Job**: The `/api/cron` endpoint is triggered daily by a Vercel cron job.
+1. **Daily Cron Job**: The `/api/cron` endpoint is triggered daily by a GitHub Actions workflow.
 2. **GitHub API Query**: The endpoint queries GitHub for merged PRs authored by both `copilot-swe-agent[bot]` and `claude-swe-agent[bot]`.
 3. **Data Storage**: The fetched data is stored in Upstash Redis with a timestamp (separate keys for each agent).
 4. **Visualization**: The application fetches historical data for both agents and displays them in an interactive chart with different colors.

@@ -37,6 +37,13 @@ CRON_SECRET=your_random_secret_string
 
 See `.env.example` for a template.
 
+### GitHub Actions Secrets
+
+For the cron job to work, add these secrets to your GitHub repository settings:
+
+- `CRON_SECRET`: The same secret used to secure the cron endpoint
+- `APP_URL`: Your deployed application URL (e.g., `https://your-app.vercel.app`)
+
 ### Installation
 
 ```bash
@@ -67,7 +74,7 @@ This application is designed to be deployed on Vercel:
 3. Add the required environment variables in Vercel's project settings
 4. Deploy!
 
-The cron job is configured in `vercel.json` to run daily at midnight UTC.
+The cron job is configured in `.github/workflows/cron.yml` to run daily at midnight UTC via GitHub Actions.
 
 ## API Routes
 
@@ -81,7 +88,7 @@ Cron endpoint that fetches the current PR count from GitHub (worldwide) and stor
 
 ## How It Works
 
-1. **Daily Cron Job**: A Vercel cron job runs daily, calling `/api/cron`
+1. **Daily Cron Job**: A GitHub Actions cron job runs daily, calling `/api/cron`
 2. **GitHub API**: The endpoint queries GitHub's GraphQL API for merged PRs authored by both `copilot-swe-agent[bot]` and `claude-swe-agent[bot]` worldwide
 3. **Redis Storage**: The counts are stored in Upstash Redis with timestamps (separate keys for each agent)
 4. **Data Visualization**: The homepage fetches all historical data and displays both agents in an interactive chart with different colors (blue for Copilot, orange for Claude)
