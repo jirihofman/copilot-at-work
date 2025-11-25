@@ -1,0 +1,25 @@
+name: Daily Cron
+
+on:
+  schedule:
+    # Run daily at midnight UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  trigger-cron:
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Validate secrets
+        run: |
+          if [ -z "${{ secrets.CRON_SECRET }}" ] || [ -z "${{ secrets.APP_URL }}" ]; then
+            echo "Error: Required secrets CRON_SECRET and APP_URL must be set"
+            exit 1
+          fi
+      - name: Trigger cron endpoint
+        run: |
+          curl -f --max-time 30 -X GET \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron"
+
