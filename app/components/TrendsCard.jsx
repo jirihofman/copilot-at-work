@@ -38,7 +38,7 @@ export default function TrendsCard({ copilotTrends, claudeTrends }) {
               Last 7 Days
             </span>
             {hasCopilotWeeklyData && (
-              <div className="flex items-baseline gap-2 mb-3">
+              <div className={`flex items-baseline gap-2 ${hasClaudeWeeklyData ? 'mb-3' : ''}`}>
                 <span className="text-xs text-blue-600 dark:text-blue-400 font-medium mr-2">
                   Copilot
                 </span>
@@ -71,7 +71,7 @@ export default function TrendsCard({ copilotTrends, claudeTrends }) {
               Last 30 Days
             </span>
             {hasCopilotMonthlyData && (
-              <div className="flex items-baseline gap-2 mb-3">
+              <div className={`flex items-baseline gap-2 ${hasClaudeMonthlyData ? 'mb-3' : ''}`}>
                 <span className="text-xs text-blue-600 dark:text-blue-400 font-medium mr-2">
                   Copilot
                 </span>
