@@ -46,12 +46,16 @@ export default function DemoPage() {
   const weeklyChange = ((currentCount - weekOldCount) / weekOldCount) * 100;
   const monthlyChange = ((currentCount - monthOldCount) / monthOldCount) * 100;
 
+  // Mock trends for both agents
+  const copilotTrends = { weeklyChange, monthlyChange };
+  const claudeTrends = { weeklyChange: weeklyChange * 0.8, monthlyChange: monthlyChange * 0.9 };
+
   return (
     <main className="min-h-screen bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 p-8">
       <div className="max-w-6xl mx-auto">
         <StatCard currentCount={currentCount} />
 
-        <TrendsCard weeklyChange={weeklyChange} monthlyChange={monthlyChange} />
+        <TrendsCard copilotTrends={copilotTrends} claudeTrends={claudeTrends} />
 
         <DemoChart data={mockData} />
 
