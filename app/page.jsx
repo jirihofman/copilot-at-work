@@ -36,6 +36,7 @@ export default async function Home() {
   const currentCopilotCount = copilotData.length > 0 ? copilotData[copilotData.length - 1].count : 0;
   const currentClaudeCount = claudeData.length > 0 ? claudeData[claudeData.length - 1].count : 0;
   const copilotTrends = calculateTrends(copilotData);
+  const claudeTrends = calculateTrends(claudeData);
   const isDevMode = process.env.NODE_ENV === "development";
 
   return (
@@ -44,7 +45,7 @@ export default async function Home() {
 
         <StatCard currentCount={currentCopilotCount} />
 
-        <TrendsCard weeklyChange={copilotTrends.weeklyChange} monthlyChange={copilotTrends.monthlyChange} />
+        <TrendsCard copilotTrends={copilotTrends} claudeTrends={claudeTrends} />
 
         <Suspense fallback={<LoadingFallback />}>
           {copilotData.length > 0 || claudeData.length > 0 ? (

@@ -1,8 +1,12 @@
-export default function TrendsCard({ weeklyChange, monthlyChange }) {
-  const hasWeeklyData = weeklyChange !== null && weeklyChange !== undefined;
-  const hasMonthlyData = monthlyChange !== null && monthlyChange !== undefined;
+export default function TrendsCard({ copilotTrends, claudeTrends }) {
+  const hasCopilotWeeklyData = copilotTrends?.weeklyChange !== null && copilotTrends?.weeklyChange !== undefined;
+  const hasCopilotMonthlyData = copilotTrends?.monthlyChange !== null && copilotTrends?.monthlyChange !== undefined;
+  const hasClaudeWeeklyData = claudeTrends?.weeklyChange !== null && claudeTrends?.weeklyChange !== undefined;
+  const hasClaudeMonthlyData = claudeTrends?.monthlyChange !== null && claudeTrends?.monthlyChange !== undefined;
 
-  if (!hasWeeklyData && !hasMonthlyData) {
+  const hasAnyData = hasCopilotWeeklyData || hasCopilotMonthlyData || hasClaudeWeeklyData || hasClaudeMonthlyData;
+
+  if (!hasAnyData) {
     return null;
   }
 
@@ -28,34 +32,70 @@ export default function TrendsCard({ weeklyChange, monthlyChange }) {
         Trends
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {hasWeeklyData && (
+        {(hasCopilotWeeklyData || hasClaudeWeeklyData) && (
           <div className="flex flex-col">
             <span className="text-sm text-gray-500 dark:text-gray-400 mb-2">
               Last 7 Days
             </span>
-            <div className="flex items-baseline gap-2">
-              <span className={`text-3xl font-bold ${getTrendColor(weeklyChange)}`}>
-                {formatChange(weeklyChange)}
-              </span>
-              <span className={`text-2xl ${getTrendColor(weeklyChange)}`}>
-                {getTrendIcon(weeklyChange)}
-              </span>
-            </div>
+            {hasCopilotWeeklyData && (
+              <div className={`flex items-baseline gap-2 ${hasClaudeWeeklyData ? 'mb-3' : ''}`}>
+                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium mr-2">
+                  Copilot
+                </span>
+                <span className={`text-3xl font-bold ${getTrendColor(copilotTrends.weeklyChange)}`}>
+                  {formatChange(copilotTrends.weeklyChange)}
+                </span>
+                <span className={`text-2xl ${getTrendColor(copilotTrends.weeklyChange)}`}>
+                  {getTrendIcon(copilotTrends.weeklyChange)}
+                </span>
+              </div>
+            )}
+            {hasClaudeWeeklyData && (
+              <div className="flex items-baseline gap-2">
+                <span className="text-xs text-orange-600 dark:text-orange-400 font-medium mr-2">
+                  Claude
+                </span>
+                <span className={`text-3xl font-bold ${getTrendColor(claudeTrends.weeklyChange)}`}>
+                  {formatChange(claudeTrends.weeklyChange)}
+                </span>
+                <span className={`text-2xl ${getTrendColor(claudeTrends.weeklyChange)}`}>
+                  {getTrendIcon(claudeTrends.weeklyChange)}
+                </span>
+              </div>
+            )}
           </div>
         )}
-        {hasMonthlyData && (
+        {(hasCopilotMonthlyData || hasClaudeMonthlyData) && (
           <div className="flex flex-col">
             <span className="text-sm text-gray-500 dark:text-gray-400 mb-2">
               Last 30 Days
             </span>
-            <div className="flex items-baseline gap-2">
-              <span className={`text-3xl font-bold ${getTrendColor(monthlyChange)}`}>
-                {formatChange(monthlyChange)}
-              </span>
-              <span className={`text-2xl ${getTrendColor(monthlyChange)}`}>
-                {getTrendIcon(monthlyChange)}
-              </span>
-            </div>
+            {hasCopilotMonthlyData && (
+              <div className={`flex items-baseline gap-2 ${hasClaudeMonthlyData ? 'mb-3' : ''}`}>
+                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium mr-2">
+                  Copilot
+                </span>
+                <span className={`text-3xl font-bold ${getTrendColor(copilotTrends.monthlyChange)}`}>
+                  {formatChange(copilotTrends.monthlyChange)}
+                </span>
+                <span className={`text-2xl ${getTrendColor(copilotTrends.monthlyChange)}`}>
+                  {getTrendIcon(copilotTrends.monthlyChange)}
+                </span>
+              </div>
+            )}
+            {hasClaudeMonthlyData && (
+              <div className="flex items-baseline gap-2">
+                <span className="text-xs text-orange-600 dark:text-orange-400 font-medium mr-2">
+                  Claude
+                </span>
+                <span className={`text-3xl font-bold ${getTrendColor(claudeTrends.monthlyChange)}`}>
+                  {formatChange(claudeTrends.monthlyChange)}
+                </span>
+                <span className={`text-2xl ${getTrendColor(claudeTrends.monthlyChange)}`}>
+                  {getTrendIcon(claudeTrends.monthlyChange)}
+                </span>
+              </div>
+            )}
           </div>
         )}
       </div>
