@@ -13,17 +13,18 @@ import {
 } from "recharts";
 import { calculateDailyPRCounts, mergeTwoAgentData, filterDataByTimeRange } from "@/lib/chart-utils";
 
-export default function ChartClient({ copilotData, claudeData }) {
+export default function ChartClient({ copilotData, claudeData, cursorData }) {
   const [chartType, setChartType] = useState("cumulative"); // "cumulative" or "daily"
   const [timeRange, setTimeRange] = useState("all"); // "all", "week", "month"
 
   // Calculate daily data from cumulative data for both agents
   const copilotDailyData = calculateDailyPRCounts(copilotData);
   const claudeDailyData = calculateDailyPRCounts(claudeData);
+  const cursorDailyData = calculateDailyPRCounts(cursorData);
   
   // Merge the data sets by date
-  const cumulativeChartData = mergeTwoAgentData(copilotData, claudeData);
-  const dailyChartData = mergeTwoAgentData(copilotDailyData, claudeDailyData);
+  const cumulativeChartData = mergeTwoAgentData(copilotData, claudeData, cursorData);
+  const dailyChartData = mergeTwoAgentData(copilotDailyData, claudeDailyData, cursorDailyData);
   
   // Filter data based on time range
   const filteredCumulativeData = useMemo(
@@ -130,6 +131,13 @@ export default function ChartClient({ copilotData, claudeData }) {
               stroke="#f97316"
               strokeWidth={2}
               name={chartType === "cumulative" ? "Claude Total PRs" : "Claude PRs per Day"}
+            />
+            <Line
+              type="monotone"
+              dataKey="cursorCount"
+              stroke="#16a34a"
+              strokeWidth={2}
+              name={chartType === "cumulative" ? "Cursor Total PRs" : "Cursor PRs per Day"}
             />
           </LineChart>
         </ResponsiveContainer>

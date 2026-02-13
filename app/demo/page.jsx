@@ -49,13 +49,14 @@ export default function DemoPage() {
   // Mock trends for both agents
   const copilotTrends = { weeklyChange, monthlyChange };
   const claudeTrends = { weeklyChange: weeklyChange * 0.8, monthlyChange: monthlyChange * 0.9 };
+  const cursorTrends = { weeklyChange: weeklyChange * 0.7, monthlyChange: monthlyChange * 0.85 };
 
   return (
     <main className="min-h-screen bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 p-8">
       <div className="max-w-6xl mx-auto">
         <StatCard currentCount={currentCount} />
 
-        <TrendsCard copilotTrends={copilotTrends} claudeTrends={claudeTrends} />
+        <TrendsCard copilotTrends={copilotTrends} claudeTrends={claudeTrends} cursorTrends={cursorTrends} />
 
         <DemoChart data={mockData} />
 
