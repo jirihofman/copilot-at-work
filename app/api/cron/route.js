@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { redis, COPILOT_PR_KEY, CLAUDE_PR_KEY } from "@/lib/redis";
-import { getCopilotPRCount, getClaudePRCount } from "@/lib/github";
+import { redis, COPILOT_PR_KEY, CLAUDE_PR_KEY, CURSOR_PR_KEY } from "@/lib/redis";
+import { getCopilotPRCount, getClaudePRCount, getCursorPRCount } from "@/lib/github";
 import { cronRateLimiter } from "@/lib/rate-limit";
 
 export async function GET(request) {
@@ -59,6 +59,7 @@ export async function GET(request) {
     // Fetch current count from GitHub (worldwide) for both agents
     const copilotCount = await getCopilotPRCount();
     const claudeCount = await getClaudePRCount();
+    const cursorCount = await getCursorPRCount();
 
     // Create data point
     const timestamp = Date.now();
@@ -76,6 +77,12 @@ export async function GET(request) {
       timestamp,
     };
 
+    const cursorDataPoint = {
+      date,
+      count: cursorCount,
+      timestamp,
+    };
+
     // Store in Redis sorted set (using timestamp as score for sorting)
     await redis.zadd(COPILOT_PR_KEY, {
       score: timestamp,
@@ -87,13 +94,19 @@ export async function GET(request) {
       member: JSON.stringify(claudeDataPoint),
     });
 
-    console.log(`Stored data points: ${date} - Copilot: ${copilotCount} PRs, Claude: ${claudeCount} PRs`);
+    await redis.zadd(CURSOR_PR_KEY, {
+      score: timestamp,
+      member: JSON.stringify(cursorDataPoint),
+    });
+
+    console.log(`Stored data points: ${date} - Copilot: ${copilotCount} PRs, Claude: ${claudeCount} PRs, Cursor: ${cursorCount} PRs`);
 
     return NextResponse.json({
       success: true,
       data: {
         copilot: copilotDataPoint,
         claude: claudeDataPoint,
+        cursor: cursorDataPoint,
       },
     });
   } catch (error) {

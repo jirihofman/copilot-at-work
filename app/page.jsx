@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import ChartClient from "@/app/components/ChartClient";
 import StatCard from "@/app/components/StatCard";
 import TrendsCard from "@/app/components/TrendsCard";
-import { fetchCopilotPRData, fetchClaudePRData } from "@/lib/server-actions";
+import { fetchCopilotPRData, fetchClaudePRData, fetchCursorPRData } from "@/lib/server-actions";
 import { calculateTrends } from "@/lib/trends";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +10,8 @@ export const dynamic = "force-dynamic";
 async function fetchData() {
   const copilotData = await fetchCopilotPRData({ limit: 365 });
   const claudeData = await fetchClaudePRData({ limit: 365 });
-  return { copilotData, claudeData };
+  const cursorData = await fetchCursorPRData({ limit: 365 });
+  return { copilotData, claudeData, cursorData };
 }
 
 function LoadingFallback() {
@@ -32,11 +33,11 @@ function EmptyState() {
 }
 
 export default async function Home() {
-  const { copilotData, claudeData } = await fetchData();
+  const { copilotData, claudeData, cursorData } = await fetchData();
   const currentCopilotCount = copilotData.length > 0 ? copilotData[copilotData.length - 1].count : 0;
-  const currentClaudeCount = claudeData.length > 0 ? claudeData[claudeData.length - 1].count : 0;
   const copilotTrends = calculateTrends(copilotData);
   const claudeTrends = calculateTrends(claudeData);
+  const cursorTrends = calculateTrends(cursorData);
   const isDevMode = process.env.NODE_ENV === "development";
 
   return (
@@ -45,11 +46,11 @@ export default async function Home() {
 
         <StatCard currentCount={currentCopilotCount} />
 
-        <TrendsCard copilotTrends={copilotTrends} claudeTrends={claudeTrends} />
+        <TrendsCard copilotTrends={copilotTrends} claudeTrends={claudeTrends} cursorTrends={cursorTrends} />
 
         <Suspense fallback={<LoadingFallback />}>
-          {copilotData.length > 0 || claudeData.length > 0 ? (
-            <ChartClient copilotData={copilotData} claudeData={claudeData} />
+          {copilotData.length > 0 || claudeData.length > 0 || cursorData.length > 0 ? (
+            <ChartClient copilotData={copilotData} claudeData={claudeData} cursorData={cursorData} />
           ) : (
             <EmptyState />
           )}

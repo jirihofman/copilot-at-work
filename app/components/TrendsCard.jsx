@@ -1,10 +1,12 @@
-export default function TrendsCard({ copilotTrends, claudeTrends }) {
+export default function TrendsCard({ copilotTrends, claudeTrends, cursorTrends }) {
   const hasCopilotWeeklyData = copilotTrends?.weeklyChange !== null && copilotTrends?.weeklyChange !== undefined;
   const hasCopilotMonthlyData = copilotTrends?.monthlyChange !== null && copilotTrends?.monthlyChange !== undefined;
   const hasClaudeWeeklyData = claudeTrends?.weeklyChange !== null && claudeTrends?.weeklyChange !== undefined;
   const hasClaudeMonthlyData = claudeTrends?.monthlyChange !== null && claudeTrends?.monthlyChange !== undefined;
+  const hasCursorWeeklyData = cursorTrends?.weeklyChange !== null && cursorTrends?.weeklyChange !== undefined;
+  const hasCursorMonthlyData = cursorTrends?.monthlyChange !== null && cursorTrends?.monthlyChange !== undefined;
 
-  const hasAnyData = hasCopilotWeeklyData || hasCopilotMonthlyData || hasClaudeWeeklyData || hasClaudeMonthlyData;
+  const hasAnyData = hasCopilotWeeklyData || hasCopilotMonthlyData || hasClaudeWeeklyData || hasClaudeMonthlyData || hasCursorWeeklyData || hasCursorMonthlyData;
 
   if (!hasAnyData) {
     return null;
@@ -32,7 +34,7 @@ export default function TrendsCard({ copilotTrends, claudeTrends }) {
         Trends
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {(hasCopilotWeeklyData || hasClaudeWeeklyData) && (
+        {(hasCopilotWeeklyData || hasClaudeWeeklyData || hasCursorWeeklyData) && (
           <div className="flex flex-col">
             <span className="text-sm text-gray-500 dark:text-gray-400 mb-2">
               Last 7 Days
@@ -51,7 +53,7 @@ export default function TrendsCard({ copilotTrends, claudeTrends }) {
               </div>
             )}
             {hasClaudeWeeklyData && (
-              <div className="flex items-baseline gap-2">
+              <div className={`flex items-baseline gap-2 ${hasCursorWeeklyData ? 'mb-3' : ''}`}>
                 <span className="text-xs text-orange-600 dark:text-orange-400 font-medium mr-2">
                   Claude
                 </span>
@@ -63,9 +65,22 @@ export default function TrendsCard({ copilotTrends, claudeTrends }) {
                 </span>
               </div>
             )}
+            {hasCursorWeeklyData && (
+              <div className="flex items-baseline gap-2">
+                <span className="text-xs text-green-600 dark:text-green-400 font-medium mr-2">
+                  Cursor
+                </span>
+                <span className={`text-3xl font-bold ${getTrendColor(cursorTrends.weeklyChange)}`}>
+                  {formatChange(cursorTrends.weeklyChange)}
+                </span>
+                <span className={`text-2xl ${getTrendColor(cursorTrends.weeklyChange)}`}>
+                  {getTrendIcon(cursorTrends.weeklyChange)}
+                </span>
+              </div>
+            )}
           </div>
         )}
-        {(hasCopilotMonthlyData || hasClaudeMonthlyData) && (
+        {(hasCopilotMonthlyData || hasClaudeMonthlyData || hasCursorMonthlyData) && (
           <div className="flex flex-col">
             <span className="text-sm text-gray-500 dark:text-gray-400 mb-2">
               Last 30 Days
@@ -84,7 +99,7 @@ export default function TrendsCard({ copilotTrends, claudeTrends }) {
               </div>
             )}
             {hasClaudeMonthlyData && (
-              <div className="flex items-baseline gap-2">
+              <div className={`flex items-baseline gap-2 ${hasCursorMonthlyData ? 'mb-3' : ''}`}>
                 <span className="text-xs text-orange-600 dark:text-orange-400 font-medium mr-2">
                   Claude
                 </span>
@@ -93,6 +108,19 @@ export default function TrendsCard({ copilotTrends, claudeTrends }) {
                 </span>
                 <span className={`text-2xl ${getTrendColor(claudeTrends.monthlyChange)}`}>
                   {getTrendIcon(claudeTrends.monthlyChange)}
+                </span>
+              </div>
+            )}
+            {hasCursorMonthlyData && (
+              <div className="flex items-baseline gap-2">
+                <span className="text-xs text-green-600 dark:text-green-400 font-medium mr-2">
+                  Cursor
+                </span>
+                <span className={`text-3xl font-bold ${getTrendColor(cursorTrends.monthlyChange)}`}>
+                  {formatChange(cursorTrends.monthlyChange)}
+                </span>
+                <span className={`text-2xl ${getTrendColor(cursorTrends.monthlyChange)}`}>
+                  {getTrendIcon(cursorTrends.monthlyChange)}
                 </span>
               </div>
             )}
