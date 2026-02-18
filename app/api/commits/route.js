@@ -3,7 +3,7 @@ import { getAgentCommitCount } from "@/lib/github";
 
 const AGENTS = [
   { key: "copilot", name: "copilot-swe-agent[bot]" },
-  { key: "claude", name: "claude-swe-agent[bot]" },
+  { key: "claude", name: "claude" },
   { key: "cursor", name: "cursoragent" },
 ];
 
