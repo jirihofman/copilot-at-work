@@ -1,6 +1,6 @@
 # Backfill Script
 
-This script allows you to backfill historical data for the Copilot PR Tracker application. It queries GitHub's GraphQL API for the number of merged PRs authored by `copilot-swe-agent[bot]` up to a specific date and stores the data in Redis.
+These scripts backfill commit history for the homepage. They query GitHub's commit search API for the number of commits authored by each tracked agent on a specific date and store the daily counts in Redis.
 
 ## Prerequisites
 
@@ -62,10 +62,10 @@ foreach ($date in $dates) {
 ## How It Works
 
 1. **Date Validation**: The script validates the date format (YYYY-MM-DD) and ensures it's not a future date
-2. **GitHub Query**: Queries GitHub's GraphQL API for PRs merged on or before the specified date using the query:
-   ```
-   is:pr is:merged author:copilot-swe-agent[bot] merged:<=YYYY-MM-DD
-   ```
+2. **GitHub Query**: Queries GitHub's commit search API for commits on the specified date using the query:
+  ```
+  author:copilot-swe-agent[bot] author-date:YYYY-MM-DD
+  ```
 3. **Data Storage**: Stores the count in Redis with an end-of-day timestamp (23:59:59.999) for the specified date
 4. **Error Handling**: Exits with status code 1 on error, 0 on success
 
@@ -73,15 +73,14 @@ foreach ($date in $dates) {
 
 ```
 Backfilling data for 2024-01-15...
-Found 150 merged PRs on or before 2024-01-15
-✓ Successfully stored data point: 2024-01-15 - 150 PRs (timestamp: 1705363199999)
+✓ Successfully stored data point: 2024-01-15 - copilot: 150 commits, claude: 120 commits, cursor: 95 commits
 Backfill completed successfully
 ```
 
 ## Notes
 
-- The script queries for PRs merged **on or before** the specified date (cumulative count)
-- Each backfill creates a single data point in Redis
+- The scripts query for commits authored on the specified date (daily count)
+- `backfill.js` writes all tracked agents for one day; `backfill-agent.js` writes one agent for one day
 - Consider adding sleep/delay between requests when backfilling multiple dates to respect GitHub's rate limits
 - The script will not overwrite existing data for a date; it will add a new entry with the same date but different timestamp
 

@@ -60,7 +60,7 @@ export default function CommitsPage() {
   return (
     <main className="min-h-screen bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 md:p-8">
       <div className="max-w-2xl mx-auto">
-        <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-500 to-purple-600 rounded-2xl shadow-2xl p-6 sm:p-8 mb-6 sm:mb-8 text-center">
+        <div className="relative overflow-hidden bg-linear-to-br from-blue-600 via-blue-500 to-purple-600 rounded-2xl shadow-2xl p-6 sm:p-8 mb-6 sm:mb-8 text-center">
           <h1 className="text-3xl sm:text-4xl font-black text-white drop-shadow-lg mb-2">
             Commits by Agents
           </h1>
@@ -136,7 +136,7 @@ export default function CommitsPage() {
         </div>
 
         <div className="mt-6 text-center text-xs text-gray-400">
-          <p>Data is fetched live from GitHub GraphQL API.</p>
+          <p>Data is fetched live from GitHub commit search.</p>
         </div>
       </div>
     </main>

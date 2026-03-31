@@ -2,15 +2,15 @@ import { Suspense } from "react";
 import ChartClient from "@/app/components/ChartClient";
 import StatCard from "@/app/components/StatCard";
 import TrendsCard from "@/app/components/TrendsCard";
-import { fetchCopilotPRData, fetchClaudePRData, fetchCursorPRData } from "@/lib/server-actions";
+import { fetchCopilotCommitData, fetchClaudeCommitData, fetchCursorCommitData } from "@/lib/server-actions";
 import { calculateTrends } from "@/lib/trends";
 
 export const dynamic = "force-dynamic";
 
 async function fetchData() {
-  const copilotData = await fetchCopilotPRData({ limit: 365 });
-  const claudeData = await fetchClaudePRData({ limit: 365 });
-  const cursorData = await fetchCursorPRData({ limit: 365 });
+  const copilotData = await fetchCopilotCommitData({ limit: 365 });
+  const claudeData = await fetchClaudeCommitData({ limit: 365 });
+  const cursorData = await fetchCursorCommitData({ limit: 365 });
   return { copilotData, claudeData, cursorData };
 }
 
@@ -26,7 +26,7 @@ function EmptyState() {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 text-center">
       <p className="text-gray-600 dark:text-gray-400">
-        No data available yet. Check back after the first cron job runs.
+        No commit history available yet. Check back after the first cron job runs.
       </p>
     </div>
   );
@@ -65,7 +65,7 @@ export default async function Home() {
         )}
 
         <div className="mt-8 text-center text-xs text-gray-400">
-          <p>Data is updated daily.</p>
+          <p>Commit history is updated daily.</p>
         </div>
       </div>
     </main>
