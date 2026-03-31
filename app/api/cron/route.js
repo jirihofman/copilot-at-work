@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
-import { redis, COPILOT_PR_KEY, CLAUDE_PR_KEY, CURSOR_PR_KEY } from "@/lib/redis";
-import { getCopilotPRCount, getClaudePRCount, getCursorPRCount } from "@/lib/github";
+import { redis, COPILOT_COMMIT_KEY, CLAUDE_COMMIT_KEY, CURSOR_COMMIT_KEY } from "@/lib/redis";
+import { getAgentCommitCount } from "@/lib/github";
 import { cronRateLimiter } from "@/lib/rate-limit";
+
+const AGENTS = [
+  { key: "copilot", name: "copilot-swe-agent[bot]", redisKey: COPILOT_COMMIT_KEY },
+  { key: "claude", name: "claude", redisKey: CLAUDE_COMMIT_KEY },
+  { key: "cursor", name: "cursoragent", redisKey: CURSOR_COMMIT_KEY },
+];
 
 export async function GET(request) {
   try {
@@ -56,58 +62,33 @@ export async function GET(request) {
       );
     }
 
-    // Fetch current count from GitHub (worldwide) for both agents
-    const copilotCount = await getCopilotPRCount();
-    const claudeCount = await getClaudePRCount();
-    const cursorCount = await getCursorPRCount();
-
-    // Create data point
     const timestamp = Date.now();
-    const date = new Date(timestamp).toISOString().split("T")[0]; // YYYY-MM-DD format
+    const date = new Date(timestamp).toISOString().split("T")[0];
+    const score = new Date(date + "T23:59:59.999Z").getTime();
 
-    const copilotDataPoint = {
-      date,
-      count: copilotCount,
-      timestamp,
-    };
+    const dataPoints = await Promise.all(
+      AGENTS.map(async (agent) => {
+        const count = await getAgentCommitCount(agent.name, date);
+        const dataPoint = { date, count, timestamp: score };
 
-    const claudeDataPoint = {
-      date,
-      count: claudeCount,
-      timestamp,
-    };
+        await redis.zadd(agent.redisKey, {
+          score,
+          member: JSON.stringify(dataPoint),
+        });
 
-    const cursorDataPoint = {
-      date,
-      count: cursorCount,
-      timestamp,
-    };
+        return [agent.key, dataPoint];
+      })
+    );
 
-    // Store in Redis sorted set (using timestamp as score for sorting)
-    await redis.zadd(COPILOT_PR_KEY, {
-      score: timestamp,
-      member: JSON.stringify(copilotDataPoint),
-    });
+    const data = Object.fromEntries(dataPoints);
 
-    await redis.zadd(CLAUDE_PR_KEY, {
-      score: timestamp,
-      member: JSON.stringify(claudeDataPoint),
-    });
-
-    await redis.zadd(CURSOR_PR_KEY, {
-      score: timestamp,
-      member: JSON.stringify(cursorDataPoint),
-    });
-
-    console.log(`Stored data points: ${date} - Copilot: ${copilotCount} PRs, Claude: ${claudeCount} PRs, Cursor: ${cursorCount} PRs`);
+    console.log(
+      `Stored commit data points: ${date} - Copilot: ${data.copilot.count}, Claude: ${data.claude.count}, Cursor: ${data.cursor.count}`
+    );
 
     return NextResponse.json({
       success: true,
-      data: {
-        copilot: copilotDataPoint,
-        claude: claudeDataPoint,
-        cursor: cursorDataPoint,
-      },
+      data,
     });
   } catch (error) {
     console.error("Error in cron job:", error);

@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * Backfill Script for Copilot PR Tracker
+ * Backfill Script for Commit History
  * 
- * This script backfills historical data for a specific date by querying
- * GitHub's GraphQL API for merged PRs created before that date and storing
- * the count in Redis.
+ * This script backfills daily commit counts for all tracked agents for a
+ * specific date and stores those counts in Redis.
  * 
  * Usage:
  *   node scripts/backfill.js YYYY-MM-DD
@@ -14,8 +13,8 @@
  *   node scripts/backfill.js 2024-01-15
  * 
  * The script will:
- * 1. Query GitHub for PRs merged on or before the specified date
- * 2. Store the count in Redis with the specified date
+ * 1. Query GitHub for commits authored on the specified date
+ * 2. Store daily counts in Redis for all tracked agents
  * 3. Exit with status 0 on success, 1 on failure
  * 
  * To backfill multiple dates, run this script in a loop:
@@ -49,50 +48,44 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
-const COPILOT_PR_KEY = "copilot:pr:history";
+const AGENTS = [
+  { key: "copilot", name: "copilot-swe-agent[bot]", redisKey: "copilot:commit:history" },
+  { key: "claude", name: "claude", redisKey: "claude:commit:history" },
+  { key: "cursor", name: "cursoragent", redisKey: "cursor:commit:history" },
+];
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 /**
- * Fetches the count of merged pull requests created by Copilot up to a specific date.
+ * Fetches the count of commits authored by an agent on a specific date.
+ * Uses GitHub REST search API.
+ * @param {string} agentName - Agent login
  * @param {string} dateStr - Date string in YYYY-MM-DD format
- * @returns {Promise<number>} Number of merged Copilot PRs up to that date
+ * @returns {Promise<number>} Number of commits for that day
  */
-async function getCopilotPRCountForDate(dateStr) {
-  const query = `is:pr is:merged author:copilot-swe-agent[bot] merged:<=${dateStr}`;
+async function getAgentCommitCountForDate(agentName, dateStr) {
+  const query = encodeURIComponent(`author:${agentName} author-date:${dateStr}`);
 
   try {
-    const res = await fetch("https://api.github.com/graphql", {
-      method: "POST",
-      headers: { 
+    const res = await fetch(`https://api.github.com/search/commits?q=${query}&per_page=1`, {
+      headers: {
         Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-        "Content-Type": "application/json",
+        Accept: "application/vnd.github+json",
       },
-      body: JSON.stringify({
-        query: `
-          query CopilotAuthoredMergedPRsAccountWide($q: String!) {
-            search(type: ISSUE, query: $q, first: 1) {
-              issueCount
-            }
-          }
-        `,
-        variables: { q: query },
-      }),
     });
 
     if (!res.ok) {
-      console.error(`GitHub GraphQL API returned an error:`, res.status, res.statusText);
+      console.error(`GitHub REST API returned an error:`, res.status, res.statusText);
       throw new Error(`GitHub API error: ${res.status} ${res.statusText}`);
     }
 
     const response = await res.json();
 
-    if (response.errors) {
-      console.error(`GraphQL errors:`, response.errors);
-      throw new Error(`GraphQL errors: ${JSON.stringify(response.errors)}`);
-    }
-
-    return response.data?.search?.issueCount || 0;
+    return response.total_count || 0;
   } catch (error) {
-    console.error(`Error getting Copilot PRs for date ${dateStr}:`, error);
+    console.error(`Error getting commits for ${agentName} on ${dateStr}:`, error);
     throw error;
   }
 }
@@ -115,35 +108,45 @@ async function backfillDate(dateStr) {
 
   // Don't allow future dates
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  today.setHours(23, 59, 59, 999);
   if (date > today) {
     throw new Error(`Cannot backfill future date: ${dateStr}`);
   }
 
-  console.log(`Backfilling data for ${dateStr}...`);
-
-  // Fetch count from GitHub for this date
-  const count = await getCopilotPRCountForDate(dateStr);
-  console.log(`Found ${count} merged PRs on or before ${dateStr}`);
+  console.log(`Backfilling commit data for ${dateStr}...`);
 
   // Create data point with end-of-day timestamp for the specified date
   const timestamp = new Date(dateStr + "T23:59:59.999Z").getTime();
 
-  const dataPoint = {
-    date: dateStr,
-    count,
-    timestamp,
-  };
+  const results = [];
 
-  // Store in Redis sorted set (using timestamp as score for sorting)
-  await redis.zadd(COPILOT_PR_KEY, {
-    score: timestamp,
-    member: JSON.stringify(dataPoint),
-  });
+  for (const [index, agent] of AGENTS.entries()) {
+    const count = await getAgentCommitCountForDate(agent.name, dateStr);
+    const dataPoint = {
+      date: dateStr,
+      count,
+      timestamp,
+    };
 
-  console.log(`✓ Successfully stored data point: ${dateStr} - ${count} PRs (timestamp: ${timestamp})`);
-  
-  return dataPoint;
+    await redis.zadd(agent.redisKey, {
+      score: timestamp,
+      member: JSON.stringify(dataPoint),
+    });
+
+    results.push({ key: agent.key, count });
+
+    if (index < AGENTS.length - 1) {
+      await sleep(1500);
+    }
+  }
+
+  console.log(
+    `✓ Successfully stored data point: ${dateStr} - ${results
+      .map((result) => `${result.key}: ${result.count} commits`)
+      .join(", ")}`
+  );
+
+  return results;
 }
 
 // Main execution

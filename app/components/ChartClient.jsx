@@ -11,19 +11,22 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { calculateDailyPRCounts, mergeAgentData, filterDataByTimeRange } from "@/lib/chart-utils";
+import { calculateCumulativeCounts, normalizeDailyCounts, mergeAgentData, filterDataByTimeRange } from "@/lib/chart-utils";
 
 export default function ChartClient({ copilotData, claudeData, cursorData }) {
   const [chartType, setChartType] = useState("cumulative"); // "cumulative" or "daily"
   const [timeRange, setTimeRange] = useState("all"); // "all", "week", "month"
 
-  // Calculate daily data from cumulative data for both agents
-  const copilotDailyData = calculateDailyPRCounts(copilotData);
-  const claudeDailyData = calculateDailyPRCounts(claudeData);
-  const cursorDailyData = calculateDailyPRCounts(cursorData);
+  // Commit history is stored as daily counts.
+  const copilotDailyData = normalizeDailyCounts(copilotData);
+  const claudeDailyData = normalizeDailyCounts(claudeData);
+  const cursorDailyData = normalizeDailyCounts(cursorData);
+  const copilotCumulativeData = calculateCumulativeCounts(copilotDailyData);
+  const claudeCumulativeData = calculateCumulativeCounts(claudeDailyData);
+  const cursorCumulativeData = calculateCumulativeCounts(cursorDailyData);
   
   // Merge the data sets by date
-  const cumulativeChartData = mergeAgentData(copilotData, claudeData, cursorData);
+  const cumulativeChartData = mergeAgentData(copilotCumulativeData, claudeCumulativeData, cursorCumulativeData);
   const dailyChartData = mergeAgentData(copilotDailyData, claudeDailyData, cursorDailyData);
   
   // Filter data based on time range
@@ -45,7 +48,7 @@ export default function ChartClient({ copilotData, claudeData, cursorData }) {
         <div className="flex flex-col gap-4 mb-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
-              {chartType === "cumulative" ? "Total PR Count Over Time" : "Daily PR Count"}
+              {chartType === "cumulative" ? "Total Commit Count Over Time" : "Daily Commit Count"}
             </h2>
             
             <div className="flex gap-2">
@@ -123,21 +126,21 @@ export default function ChartClient({ copilotData, claudeData, cursorData }) {
               dataKey="copilotCount"
               stroke="#2563eb"
               strokeWidth={2}
-              name={chartType === "cumulative" ? "Copilot Total PRs" : "Copilot PRs per Day"}
+              name={chartType === "cumulative" ? "Copilot Total Commits" : "Copilot Commits per Day"}
             />
             <Line
               type="monotone"
               dataKey="claudeCount"
               stroke="#f97316"
               strokeWidth={2}
-              name={chartType === "cumulative" ? "Claude Total PRs" : "Claude PRs per Day"}
+              name={chartType === "cumulative" ? "Claude Total Commits" : "Claude Commits per Day"}
             />
             <Line
               type="monotone"
               dataKey="cursorCount"
               stroke="#16a34a"
               strokeWidth={2}
-              name={chartType === "cumulative" ? "Cursor Total PRs" : "Cursor PRs per Day"}
+              name={chartType === "cumulative" ? "Cursor Total Commits" : "Cursor Commits per Day"}
             />
           </LineChart>
         </ResponsiveContainer>
