@@ -7,6 +7,29 @@ import { calculateTrends } from "@/lib/trends";
 
 export const dynamic = "force-dynamic";
 
+const methodologyItems = [
+  {
+    title: "Public GitHub search",
+    description:
+      "The numbers come from GitHub's public commit search API. Each day the app queries worldwide public commits and asks GitHub for the total count returned by a specific author filter.",
+  },
+  {
+    title: "Tracked signatures",
+    description:
+      "Copilot uses author:copilot-swe-agent[bot], Claude uses author:claude, and Cursor uses author:cursoragent. Each query is also constrained to a single UTC day with author-date:YYYY-MM-DD.",
+  },
+  {
+    title: "Daily snapshots",
+    description:
+      "A cron endpoint runs once per day, stores the count for that day in Upstash Redis, and the chart reads back the stored history rather than recomputing old days on every page load.",
+  },
+  {
+    title: "Important caveat",
+    description:
+      "This is a useful public signal, not a canonical dataset. Results depend on GitHub search indexing and on how each tool authors or signs commits, so counts may miss activity or include noise.",
+  },
+];
+
 async function fetchData() {
   const copilotData = await fetchCopilotCommitData({ limit: 365 });
   const claudeData = await fetchClaudeCommitData({ limit: 365 });
@@ -32,13 +55,43 @@ function EmptyState() {
   );
 }
 
+function MethodologyCard() {
+  return (
+    <section className="mt-8 rounded-2xl border border-gray-200 bg-white/95 p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800/95 sm:p-8">
+      <div className="max-w-4xl">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
+          Methodology
+        </p>
+        <h2 className="mt-3 text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
+          How these numbers are gathered
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300 sm:text-base">
+          This site tracks daily commit counts by taking one snapshot per day from GitHub&apos;s public search index.
+          It does not have private access to GitHub or vendor telemetry.
+        </p>
+
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          {methodologyItems.map((item) => (
+            <div
+              key={item.title}
+              className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/60"
+            >
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{item.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">{item.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default async function Home() {
   const { copilotData, claudeData, cursorData } = await fetchData();
   const currentCopilotCount = copilotData.length > 0 ? copilotData[copilotData.length - 1].count : 0;
   const copilotTrends = calculateTrends(copilotData);
   const claudeTrends = calculateTrends(claudeData);
   const cursorTrends = calculateTrends(cursorData);
-  const isDevMode = process.env.NODE_ENV === "development";
 
   return (
     <main className="min-h-screen bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 md:p-8">
@@ -56,13 +109,7 @@ export default async function Home() {
           )}
         </Suspense>
 
-        {isDevMode && (
-          <div className="mt-8 text-center">
-            <p className="text-xs text-gray-400">
-              Development mode - use the dev button in client component
-            </p>
-          </div>
-        )}
+        <MethodologyCard />
 
         <div className="mt-8 text-center text-xs text-gray-400">
           <p>Commit history is updated daily.</p>
