@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { redis, COPILOT_COMMIT_KEY, CLAUDE_COMMIT_KEY, CURSOR_COMMIT_KEY } from "@/lib/redis";
+import { getDailyScore, getPreviousUTCDateString, upsertHistoryDataPoint } from "@/lib/commit-history";
 import { getAgentCommitCount } from "@/lib/github";
 import { cronRateLimiter } from "@/lib/rate-limit";
 
@@ -62,19 +63,16 @@ export async function GET(request) {
       );
     }
 
-    const timestamp = Date.now();
-    const date = new Date(timestamp).toISOString().split("T")[0];
-    const score = new Date(date + "T23:59:59.999Z").getTime();
+    // The workflow runs at 00:00 UTC, so the current UTC day is still incomplete.
+    const date = getPreviousUTCDateString();
+    const score = getDailyScore(date);
 
     const dataPoints = await Promise.all(
       AGENTS.map(async (agent) => {
         const count = await getAgentCommitCount(agent.name, date);
         const dataPoint = { date, count, timestamp: score };
 
-        await redis.zadd(agent.redisKey, {
-          score,
-          member: JSON.stringify(dataPoint),
-        });
+        await upsertHistoryDataPoint(redis, agent.redisKey, dataPoint);
 
         return [agent.key, dataPoint];
       })

@@ -29,6 +29,7 @@
 
 import { Redis } from "@upstash/redis";
 import dotenv from 'dotenv';
+import { getDailyScore, getUTCDateString, upsertHistoryDataPoint } from "../lib/commit-history.js";
 
 // Load environment variables from .env.local or .env
 dotenv.config({ path: '.env.local' });
@@ -124,8 +125,7 @@ async function backfillDate(agentName, dateStr) {
   }
 
   // Don't allow future dates (compare date strings to avoid timezone issues)
-  const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
+  const todayStr = getUTCDateString();
   if (dateStr > todayStr) {
     throw new Error(`Cannot backfill future date: ${dateStr}`);
   }
@@ -137,7 +137,7 @@ async function backfillDate(agentName, dateStr) {
   console.log(`Found ${count} commits on ${dateStr}`);
 
   // Create data point with end-of-day timestamp for the specified date
-  const timestamp = new Date(dateStr + "T23:59:59.999Z").getTime();
+  const timestamp = getDailyScore(dateStr);
 
   const dataPoint = {
     date: dateStr,
@@ -146,10 +146,7 @@ async function backfillDate(agentName, dateStr) {
   };
 
   // Store in Redis sorted set (using timestamp as score for sorting)
-  await redis.zadd(config.redisKey, {
-    score: timestamp,
-    member: JSON.stringify(dataPoint),
-  });
+  await upsertHistoryDataPoint(redis, config.redisKey, dataPoint);
 
   console.log(`✓ Successfully stored data point: ${dateStr} - ${count} commits (timestamp: ${timestamp})`);
   

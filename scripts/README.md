@@ -67,7 +67,8 @@ foreach ($date in $dates) {
   author:copilot-swe-agent[bot] author-date:YYYY-MM-DD
   ```
 3. **Data Storage**: Stores the count in Redis with an end-of-day timestamp (23:59:59.999) for the specified date
-4. **Error Handling**: Exits with status code 1 on error, 0 on success
+4. **Storage Semantics**: Replaces any existing record for the same day instead of appending duplicates
+5. **Error Handling**: Exits with status code 1 on error, 0 on success
 
 ## Example Output
 
@@ -82,7 +83,7 @@ Backfill completed successfully
 - The scripts query for commits authored on the specified date (daily count)
 - `backfill.js` writes all tracked agents for one day; `backfill-agent.js` writes one agent for one day
 - Consider adding sleep/delay between requests when backfilling multiple dates to respect GitHub's rate limits
-- The script will not overwrite existing data for a date; it will add a new entry with the same date but different timestamp
+- The scripts overwrite an existing record for the same date by replacing the same end-of-day score in Redis
 
 ## Troubleshooting
 
