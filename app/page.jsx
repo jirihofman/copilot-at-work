@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import ChartClient from "@/app/components/ChartClient";
 import StatCard from "@/app/components/StatCard";
 import TrendsCard from "@/app/components/TrendsCard";
-import { fetchCopilotCommitData, fetchClaudeCommitData, fetchCursorCommitData } from "@/lib/server-actions";
+import { fetchCopilotCommitData, fetchClaudeCommitData, fetchCursorCommitData, fetchCodexCommitData } from "@/lib/server-actions";
 import { calculateTrends } from "@/lib/trends";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ const methodologyItems = [
   {
     title: "Tracked signatures",
     description:
-      "Copilot uses author:copilot-swe-agent[bot], Claude uses author:claude, and Cursor uses author:cursoragent. Each query is also constrained to a single UTC day with author-date:YYYY-MM-DD.",
+      "Copilot uses author:copilot-swe-agent[bot], Claude uses author:claude, Cursor uses author:cursoragent, and Codex uses author:openai-codex[bot]. Each query is also constrained to a single UTC day with author-date:YYYY-MM-DD.",
   },
   {
     title: "Daily snapshots",
@@ -34,7 +34,8 @@ async function fetchData() {
   const copilotData = await fetchCopilotCommitData({ limit: 365 });
   const claudeData = await fetchClaudeCommitData({ limit: 365 });
   const cursorData = await fetchCursorCommitData({ limit: 365 });
-  return { copilotData, claudeData, cursorData };
+  const codexData = await fetchCodexCommitData({ limit: 365 });
+  return { copilotData, claudeData, cursorData, codexData };
 }
 
 function LoadingFallback() {
@@ -87,11 +88,12 @@ function MethodologyCard() {
 }
 
 export default async function Home() {
-  const { copilotData, claudeData, cursorData } = await fetchData();
+  const { copilotData, claudeData, cursorData, codexData } = await fetchData();
   const currentCopilotCount = copilotData.length > 0 ? copilotData[copilotData.length - 1].count : 0;
   const copilotTrends = calculateTrends(copilotData);
   const claudeTrends = calculateTrends(claudeData);
   const cursorTrends = calculateTrends(cursorData);
+  const codexTrends = calculateTrends(codexData);
 
   return (
     <main className="min-h-screen bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 md:p-8">
@@ -99,11 +101,11 @@ export default async function Home() {
 
         <StatCard currentCount={currentCopilotCount} />
 
-        <TrendsCard copilotTrends={copilotTrends} claudeTrends={claudeTrends} cursorTrends={cursorTrends} />
+        <TrendsCard copilotTrends={copilotTrends} claudeTrends={claudeTrends} cursorTrends={cursorTrends} codexTrends={codexTrends} />
 
         <Suspense fallback={<LoadingFallback />}>
-          {copilotData.length > 0 || claudeData.length > 0 || cursorData.length > 0 ? (
-            <ChartClient copilotData={copilotData} claudeData={claudeData} cursorData={cursorData} />
+          {copilotData.length > 0 || claudeData.length > 0 || cursorData.length > 0 || codexData.length > 0 ? (
+            <ChartClient copilotData={copilotData} claudeData={claudeData} cursorData={cursorData} codexData={codexData} />
           ) : (
             <EmptyState />
           )}

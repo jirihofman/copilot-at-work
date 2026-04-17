@@ -22,10 +22,16 @@ This document provides an overview of the Copilot agents used in the `Copilot at
 - **Usage**: Data fetched by this agent is stored in Upstash Redis and visualized in the application.
 - **Chart Color**: Green (#16a34a)
 
+### `openai-codex[bot]`
+- **Purpose**: Tracks merged pull requests worldwide.
+- **Integration**: Queries GitHub's GraphQL API for PR data.
+- **Usage**: Data fetched by this agent is stored in Upstash Redis and visualized in the application.
+- **Chart Color**: Purple (#7c3aed)
+
 ## How Agents Work
 
 1. **Daily Cron Job**: The `/api/cron` endpoint is triggered daily by a GitHub Actions workflow.
-2. **GitHub API Query**: The endpoint queries GitHub for merged PRs authored by `copilot-swe-agent[bot]`, `claude-swe-agent[bot]`, and `cursoragent`.
+2. **GitHub API Query**: The endpoint queries GitHub for merged PRs authored by `copilot-swe-agent[bot]`, `claude-swe-agent[bot]`, `cursoragent`, and `openai-codex[bot]`.
 3. **Data Storage**: The fetched data is stored in Upstash Redis with a timestamp (separate keys for each agent).
 4. **Visualization**: The application fetches historical data for all tracked agents and displays them in an interactive chart with different colors.
 

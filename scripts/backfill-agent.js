@@ -14,6 +14,7 @@
  *   node scripts/backfill-agent.js copilot 2024-01-15
  *   node scripts/backfill-agent.js claude 2024-01-15
  *   node scripts/backfill-agent.js cursor 2024-01-15
+ *   node scripts/backfill-agent.js codex 2024-01-15
  * 
  * The script will:
  * 1. Query GitHub for commits authored on the specified date
@@ -65,6 +66,10 @@ const AGENT_CONFIG = {
     botName: "cursoragent",
     redisKey: "cursor:commit:history",
   },
+  codex: {
+    botName: "openai-codex[bot]",
+    redisKey: "codex:commit:history",
+  },
 };
 
 /**
@@ -76,7 +81,7 @@ const AGENT_CONFIG = {
 async function getAgentCommitCountForDate(agentName, dateStr) {
   const config = AGENT_CONFIG[agentName];
   if (!config) {
-    throw new Error(`Unknown agent: ${agentName}. Use 'copilot', 'claude' or 'cursor'`);
+    throw new Error(`Unknown agent: ${agentName}. Use 'copilot', 'claude', 'cursor' or 'codex'`);
   }
 
   const query = encodeURIComponent(`author:${config.botName} author-date:${dateStr}`);
@@ -109,7 +114,7 @@ async function getAgentCommitCountForDate(agentName, dateStr) {
 async function backfillDate(agentName, dateStr) {
   const config = AGENT_CONFIG[agentName];
   if (!config) {
-    throw new Error(`Unknown agent: ${agentName}. Use 'copilot', 'claude' or 'cursor'`);
+    throw new Error(`Unknown agent: ${agentName}. Use 'copilot', 'claude', 'cursor' or 'codex'`);
   }
 
   // Validate date format
@@ -162,6 +167,8 @@ if (!agentArg || !dateArg) {
   console.error("Usage: node scripts/backfill-agent.js <agent> YYYY-MM-DD");
   console.error("Example: node scripts/backfill-agent.js copilot 2024-01-15");
   console.error("         node scripts/backfill-agent.js claude 2024-01-15");
+  console.error("         node scripts/backfill-agent.js cursor 2024-01-15");
+  console.error("         node scripts/backfill-agent.js codex 2024-01-15");
   process.exit(1);
 }
 

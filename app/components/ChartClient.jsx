@@ -13,7 +13,7 @@ import {
 } from "recharts";
 import { calculateCumulativeCounts, normalizeDailyCounts, mergeAgentData, filterDataByTimeRange } from "@/lib/chart-utils";
 
-export default function ChartClient({ copilotData, claudeData, cursorData }) {
+export default function ChartClient({ copilotData, claudeData, cursorData, codexData }) {
   const [chartType, setChartType] = useState("cumulative"); // "cumulative" or "daily"
   const [timeRange, setTimeRange] = useState("all"); // "all", "week", "month"
 
@@ -21,13 +21,15 @@ export default function ChartClient({ copilotData, claudeData, cursorData }) {
   const copilotDailyData = normalizeDailyCounts(copilotData);
   const claudeDailyData = normalizeDailyCounts(claudeData);
   const cursorDailyData = normalizeDailyCounts(cursorData);
+  const codexDailyData = normalizeDailyCounts(codexData);
   const copilotCumulativeData = calculateCumulativeCounts(copilotDailyData);
   const claudeCumulativeData = calculateCumulativeCounts(claudeDailyData);
   const cursorCumulativeData = calculateCumulativeCounts(cursorDailyData);
+  const codexCumulativeData = calculateCumulativeCounts(codexDailyData);
   
   // Merge the data sets by date
-  const cumulativeChartData = mergeAgentData(copilotCumulativeData, claudeCumulativeData, cursorCumulativeData);
-  const dailyChartData = mergeAgentData(copilotDailyData, claudeDailyData, cursorDailyData);
+  const cumulativeChartData = mergeAgentData(copilotCumulativeData, claudeCumulativeData, cursorCumulativeData, codexCumulativeData);
+  const dailyChartData = mergeAgentData(copilotDailyData, claudeDailyData, cursorDailyData, codexDailyData);
   
   // Filter data based on time range
   const filteredCumulativeData = useMemo(
@@ -141,6 +143,13 @@ export default function ChartClient({ copilotData, claudeData, cursorData }) {
               stroke="#16a34a"
               strokeWidth={2}
               name={chartType === "cumulative" ? "Cursor Total Commits" : "Cursor Commits per Day"}
+            />
+            <Line
+              type="monotone"
+              dataKey="codexCount"
+              stroke="#7c3aed"
+              strokeWidth={2}
+              name={chartType === "cumulative" ? "Codex Total Commits" : "Codex Commits per Day"}
             />
           </LineChart>
         </ResponsiveContainer>

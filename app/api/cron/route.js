@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { redis, COPILOT_COMMIT_KEY, CLAUDE_COMMIT_KEY, CURSOR_COMMIT_KEY } from "@/lib/redis";
+import { redis, COPILOT_COMMIT_KEY, CLAUDE_COMMIT_KEY, CURSOR_COMMIT_KEY, CODEX_COMMIT_KEY } from "@/lib/redis";
 import { getDailyScore, getPreviousUTCDateString, upsertHistoryDataPoint } from "@/lib/commit-history";
 import { getAgentCommitCount } from "@/lib/github";
 import { cronRateLimiter } from "@/lib/rate-limit";
@@ -8,6 +8,7 @@ const AGENTS = [
   { key: "copilot", name: "copilot-swe-agent[bot]", redisKey: COPILOT_COMMIT_KEY },
   { key: "claude", name: "claude", redisKey: CLAUDE_COMMIT_KEY },
   { key: "cursor", name: "cursoragent", redisKey: CURSOR_COMMIT_KEY },
+  { key: "codex", name: "openai-codex[bot]", redisKey: CODEX_COMMIT_KEY },
 ];
 
 export async function GET(request) {
@@ -81,7 +82,7 @@ export async function GET(request) {
     const data = Object.fromEntries(dataPoints);
 
     console.log(
-      `Stored commit data points: ${date} - Copilot: ${data.copilot.count}, Claude: ${data.claude.count}, Cursor: ${data.cursor.count}`
+      `Stored commit data points: ${date} - Copilot: ${data.copilot.count}, Claude: ${data.claude.count}, Cursor: ${data.cursor.count}, Codex: ${data.codex.count}`
     );
 
     return NextResponse.json({
