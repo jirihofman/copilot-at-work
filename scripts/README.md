@@ -1,6 +1,6 @@
 # Backfill Script
 
-These scripts backfill commit history for the homepage. They query GitHub's commit search API for the number of commits authored by each tracked agent on a specific date and store the daily counts in Redis.
+These scripts backfill commit history for the homepage. They query GitHub's commit search API for the number of commits attributed to each tracked agent on a specific date and store the daily counts in Redis.
 
 ## Prerequisites
 
@@ -62,9 +62,13 @@ foreach ($date in $dates) {
 ## How It Works
 
 1. **Date Validation**: The script validates the date format (YYYY-MM-DD) and ensures it's not a future date
-2. **GitHub Query**: Queries GitHub's commit search API for commits on the specified date using the query:
+2. **GitHub Query**: Queries GitHub's commit search API for commits on the specified date. Most agents use author filters:
   ```
   author:copilot-swe-agent[bot] author-date:YYYY-MM-DD
+  ```
+  Codex uses the commit trailer signal:
+  ```
+  "Co-authored-by: Codex" author-date:YYYY-MM-DD
   ```
 3. **Data Storage**: Stores the count in Redis with an end-of-day timestamp (23:59:59.999) for the specified date
 4. **Storage Semantics**: Replaces any existing record for the same day instead of appending duplicates
@@ -74,13 +78,13 @@ foreach ($date in $dates) {
 
 ```
 Backfilling data for 2024-01-15...
-✓ Successfully stored data point: 2024-01-15 - copilot: 150 commits, claude: 120 commits, cursor: 95 commits
+✓ Successfully stored data point: 2024-01-15 - copilot: 150 commits, claude: 120 commits, cursor: 95 commits, codex: 80 commits
 Backfill completed successfully
 ```
 
 ## Notes
 
-- The scripts query for commits authored on the specified date (daily count)
+- The scripts query for commits on the specified date (daily count)
 - `backfill.js` writes all tracked agents for one day; `backfill-agent.js` writes one agent for one day
 - Consider adding sleep/delay between requests when backfilling multiple dates to respect GitHub's rate limits
 - The scripts overwrite an existing record for the same date by replacing the same end-of-day score in Redis

@@ -14,6 +14,7 @@
  *   node scripts/backfill-agent.js copilot 2024-01-15
  *   node scripts/backfill-agent.js claude 2024-01-15
  *   node scripts/backfill-agent.js cursor 2024-01-15
+ *   node scripts/backfill-agent.js codex 2024-01-15
  * 
  * The script will:
  * 1. Query GitHub for commits authored on the specified date
@@ -32,8 +33,8 @@ import dotenv from 'dotenv';
 import { getDailyScore, getUTCDateString, upsertHistoryDataPoint } from "../lib/commit-history.js";
 
 // Load environment variables from .env.local or .env
-dotenv.config({ path: '.env.local' });
-dotenv.config(); // Fallback to .env
+dotenv.config({ path: '.env.local', quiet: true });
+dotenv.config({ quiet: true }); // Fallback to .env
 
 // Validate environment variables
 if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -52,51 +53,75 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 const AGENT_CONFIG = {
   copilot: {
     botName: "copilot-swe-agent[bot]",
     redisKey: "copilot:commit:history",
+    query: (dateStr) => `author:copilot-swe-agent[bot] author-date:${dateStr}`,
   },
   claude: {
     botName: "claude",
     redisKey: "claude:commit:history",
+    query: (dateStr) => `author:claude author-date:${dateStr}`,
   },
   cursor: {
     botName: "cursoragent",
     redisKey: "cursor:commit:history",
+    query: (dateStr) => `author:cursoragent author-date:${dateStr}`,
+  },
+  codex: {
+    botName: "Co-authored-by: Codex",
+    redisKey: "codex:commit:history",
+    query: (dateStr) => `"Co-authored-by: Codex" author-date:${dateStr}`,
   },
 };
 
 /**
  * Fetches the count of commits authored by an agent on a specific date.
- * @param {string} agentName - Agent name (copilot, claude, or cursor)
+ * @param {string} agentName - Agent name (copilot, claude, cursor, or codex)
  * @param {string} dateStr - Date string in YYYY-MM-DD format
  * @returns {Promise<number>} Number of commits for that date
  */
 async function getAgentCommitCountForDate(agentName, dateStr) {
   const config = AGENT_CONFIG[agentName];
   if (!config) {
-    throw new Error(`Unknown agent: ${agentName}. Use 'copilot', 'claude' or 'cursor'`);
+    throw new Error(`Unknown agent: ${agentName}. Use 'copilot', 'claude', 'cursor' or 'codex'`);
   }
 
-  const query = encodeURIComponent(`author:${config.botName} author-date:${dateStr}`);
+  const query = encodeURIComponent(config.query(dateStr));
+  const maxAttempts = 3;
 
   try {
-    const res = await fetch(`https://api.github.com/search/commits?q=${query}&per_page=1`, {
-      headers: {
-        Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-        Accept: "application/vnd.github+json",
-      },
-    });
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const res = await fetch(`https://api.github.com/search/commits?q=${query}&per_page=1`, {
+        headers: {
+          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+          Accept: "application/vnd.github+json",
+        },
+      });
 
-    if (!res.ok) {
-      console.error(`GitHub REST API returned an error:`, res.status, res.statusText);
+      if (res.ok) {
+        const response = await res.json();
+        return response.total_count || 0;
+      }
+
+      const response = await res.json().catch(() => ({}));
+      const isSecondaryLimit = res.status === 403 && typeof response.message === "string" && response.message.includes("secondary rate limit");
+
+      if (isSecondaryLimit && attempt < maxAttempts) {
+        const delayMs = 60_000 * attempt;
+        console.warn(`GitHub secondary rate limit hit; retrying in ${delayMs / 1000}s (attempt ${attempt + 1}/${maxAttempts})`);
+        await sleep(delayMs);
+        continue;
+      }
+
+      console.error(`GitHub REST API returned an error:`, res.status, res.statusText, response.message || "");
       throw new Error(`GitHub API error: ${res.status} ${res.statusText}`);
     }
-
-    const response = await res.json();
-
-    return response.total_count || 0;
   } catch (error) {
     console.error(`Error getting ${agentName} commits for date ${dateStr}:`, error);
     throw error;
@@ -109,7 +134,7 @@ async function getAgentCommitCountForDate(agentName, dateStr) {
 async function backfillDate(agentName, dateStr) {
   const config = AGENT_CONFIG[agentName];
   if (!config) {
-    throw new Error(`Unknown agent: ${agentName}. Use 'copilot', 'claude' or 'cursor'`);
+    throw new Error(`Unknown agent: ${agentName}. Use 'copilot', 'claude', 'cursor' or 'codex'`);
   }
 
   // Validate date format
@@ -162,6 +187,7 @@ if (!agentArg || !dateArg) {
   console.error("Usage: node scripts/backfill-agent.js <agent> YYYY-MM-DD");
   console.error("Example: node scripts/backfill-agent.js copilot 2024-01-15");
   console.error("         node scripts/backfill-agent.js claude 2024-01-15");
+  console.error("         node scripts/backfill-agent.js codex 2024-01-15");
   process.exit(1);
 }
 

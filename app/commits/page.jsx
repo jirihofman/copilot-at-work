@@ -6,6 +6,7 @@ const AGENTS = [
   { key: "copilot", label: "Copilot", color: "bg-blue-600", textColor: "text-blue-600" },
   { key: "claude", label: "Claude", color: "bg-orange-500", textColor: "text-orange-500" },
   { key: "cursor", label: "Cursor", color: "bg-green-600", textColor: "text-green-600" },
+  { key: "codex", label: "Codex", color: "bg-gray-900 dark:bg-gray-100", textColor: "text-gray-900 dark:text-gray-100" },
 ];
 
 function toDateString(date) {

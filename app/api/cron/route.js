@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
-import { redis, COPILOT_COMMIT_KEY, CLAUDE_COMMIT_KEY, CURSOR_COMMIT_KEY } from "@/lib/redis";
+import { redis, COPILOT_COMMIT_KEY, CLAUDE_COMMIT_KEY, CURSOR_COMMIT_KEY, CODEX_COMMIT_KEY } from "@/lib/redis";
 import { getDailyScore, getPreviousUTCDateString, upsertHistoryDataPoint } from "@/lib/commit-history";
-import { getAgentCommitCount } from "@/lib/github";
+import { getAgentCommitCount, getCodexCommitCount } from "@/lib/github";
 import { cronRateLimiter } from "@/lib/rate-limit";
 
 const AGENTS = [
-  { key: "copilot", name: "copilot-swe-agent[bot]", redisKey: COPILOT_COMMIT_KEY },
-  { key: "claude", name: "claude", redisKey: CLAUDE_COMMIT_KEY },
-  { key: "cursor", name: "cursoragent", redisKey: CURSOR_COMMIT_KEY },
+  { key: "copilot", name: "copilot-swe-agent[bot]", redisKey: COPILOT_COMMIT_KEY, getCount: (date) => getAgentCommitCount("copilot-swe-agent[bot]", date) },
+  { key: "claude", name: "claude", redisKey: CLAUDE_COMMIT_KEY, getCount: (date) => getAgentCommitCount("claude", date) },
+  { key: "cursor", name: "cursoragent", redisKey: CURSOR_COMMIT_KEY, getCount: (date) => getAgentCommitCount("cursoragent", date) },
+  { key: "codex", name: "Co-authored-by: Codex", redisKey: CODEX_COMMIT_KEY, getCount: getCodexCommitCount },
 ];
 
 export async function GET(request) {
@@ -69,7 +70,7 @@ export async function GET(request) {
 
     const dataPoints = await Promise.all(
       AGENTS.map(async (agent) => {
-        const count = await getAgentCommitCount(agent.name, date);
+        const count = await agent.getCount(date);
         const dataPoint = { date, count, timestamp: score };
 
         await upsertHistoryDataPoint(redis, agent.redisKey, dataPoint);
@@ -81,7 +82,7 @@ export async function GET(request) {
     const data = Object.fromEntries(dataPoints);
 
     console.log(
-      `Stored commit data points: ${date} - Copilot: ${data.copilot.count}, Claude: ${data.claude.count}, Cursor: ${data.cursor.count}`
+      `Stored commit data points: ${date} - Copilot: ${data.copilot.count}, Claude: ${data.claude.count}, Cursor: ${data.cursor.count}, Codex: ${data.codex.count}`
     );
 
     return NextResponse.json({

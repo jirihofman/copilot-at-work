@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { getAgentCommitCount } from "@/lib/github";
+import { getAgentCommitCount, getCodexCommitCount } from "@/lib/github";
 
 const AGENTS = [
-  { key: "copilot", name: "copilot-swe-agent[bot]" },
-  { key: "claude", name: "claude" },
-  { key: "cursor", name: "cursoragent" },
+  { key: "copilot", name: "copilot-swe-agent[bot]", getCount: (date) => getAgentCommitCount("copilot-swe-agent[bot]", date) },
+  { key: "claude", name: "claude", getCount: (date) => getAgentCommitCount("claude", date) },
+  { key: "cursor", name: "cursoragent", getCount: (date) => getAgentCommitCount("cursoragent", date) },
+  { key: "codex", name: "Co-authored-by: Codex", getCount: getCodexCommitCount },
 ];
 
 export async function GET(request) {
@@ -21,7 +22,7 @@ export async function GET(request) {
   try {
     const results = await Promise.all(
       AGENTS.map(async (agent) => {
-        const count = await getAgentCommitCount(agent.name, date);
+        const count = await agent.getCount(date);
         return { key: agent.key, name: agent.name, count };
       })
     );
