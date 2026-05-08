@@ -1,12 +1,12 @@
-# Copilot at Work - PR Tracker
+# Copilot at Work - Agent Commit Tracker
 
-A Next.js application that tracks merged PRs from Copilot and other AI coding agents worldwide over time using GitHub's GraphQL API and Redis for data storage.
+A Next.js application that tracks public GitHub commit activity from Copilot and other AI coding agents worldwide over time using GitHub search APIs and Redis for data storage.
 
 ## Features
 
-- 📊 Real-time tracking of merged Copilot, Claude, and Cursor PRs worldwide
-- 📈 Interactive chart showing PR count over time for all tracked agents
-- 🎨 Multi-line visualization: blue for Copilot, orange for Claude, green for Cursor
+- 📊 Real-time tracking of Copilot, Claude, Cursor, and Codex commit signals worldwide
+- 📈 Interactive chart showing commit count over time for all tracked agents
+- 🎨 Multi-line visualization: blue for Copilot, orange for Claude, green for Cursor, black for Codex
 - ⏰ Daily automated updates via cron job
 - 💾 Data persistence using Upstash Redis
 - 🚀 Deployed on Vercel
@@ -78,18 +78,18 @@ The cron job is configured in `.github/workflows/cron.yml` to run daily at midni
 
 ## API Routes
 
-### `GET /api/fetch-copilot-prs`
+### `GET /api/commits`
 
-Returns all historical PR count data from Redis.
+Returns live commit counts for all tracked agents for a requested date.
 
 ### `GET /api/cron`
 
-Cron endpoint that fetches the current PR count from GitHub (worldwide) and stores it in Redis. This endpoint requires authorization via the `CRON_SECRET`.
+Cron endpoint that fetches the previous UTC day's commit counts from GitHub (worldwide) and stores them in Redis. This endpoint requires authorization via the `CRON_SECRET`.
 
 ## How It Works
 
 1. **Daily Cron Job**: A GitHub Actions cron job runs daily, calling `/api/cron`
-2. **GitHub API**: The endpoint queries GitHub's GraphQL API for merged PRs authored by `copilot-swe-agent[bot]`, `claude-swe-agent[bot]`, and `cursoragent` worldwide
+2. **GitHub API**: The endpoint queries GitHub's commit search API for `author:copilot-swe-agent[bot]`, `author:claude`, `author:cursoragent`, and the exact `"Co-authored-by: Codex"` trailer worldwide
 3. **Redis Storage**: The counts are stored in Upstash Redis with timestamps (separate keys for each agent)
 4. **Data Visualization**: The homepage fetches all historical data and displays all tracked agents in an interactive chart with different colors
 
