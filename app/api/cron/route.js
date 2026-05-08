@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-import { redis, COPILOT_COMMIT_KEY, CLAUDE_COMMIT_KEY, CURSOR_COMMIT_KEY, CODEX_COMMIT_KEY } from "@/lib/redis";
+import { redis, COPILOT_COMMIT_KEY, CLAUDE_COMMIT_KEY, CURSOR_COMMIT_KEY, CODEX_PR_KEY } from "@/lib/redis";
 import { getDailyScore, getPreviousUTCDateString, upsertHistoryDataPoint } from "@/lib/commit-history";
-import { getAgentCommitCount, getCodexCommitCount } from "@/lib/github";
+import { getAgentCommitCount, getCodexPRLabelCount } from "@/lib/github";
 import { cronRateLimiter } from "@/lib/rate-limit";
 
 const AGENTS = [
   { key: "copilot", name: "copilot-swe-agent[bot]", redisKey: COPILOT_COMMIT_KEY, getCount: (date) => getAgentCommitCount("copilot-swe-agent[bot]", date) },
   { key: "claude", name: "claude", redisKey: CLAUDE_COMMIT_KEY, getCount: (date) => getAgentCommitCount("claude", date) },
   { key: "cursor", name: "cursoragent", redisKey: CURSOR_COMMIT_KEY, getCount: (date) => getAgentCommitCount("cursoragent", date) },
-  { key: "codex", name: "Co-authored-by: Codex", redisKey: CODEX_COMMIT_KEY, getCount: getCodexCommitCount },
+  { key: "codex", name: "label:codex", redisKey: CODEX_PR_KEY, getCount: getCodexPRLabelCount },
 ];
 
 export async function GET(request) {
@@ -82,7 +82,7 @@ export async function GET(request) {
     const data = Object.fromEntries(dataPoints);
 
     console.log(
-      `Stored commit data points: ${date} - Copilot: ${data.copilot.count}, Claude: ${data.claude.count}, Cursor: ${data.cursor.count}, Codex: ${data.codex.count}`
+      `Stored activity data points: ${date} - Copilot commits: ${data.copilot.count}, Claude commits: ${data.claude.count}, Cursor commits: ${data.cursor.count}, Codex PRs: ${data.codex.count}`
     );
 
     return NextResponse.json({

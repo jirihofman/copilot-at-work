@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getAgentCommitCount, getCodexCommitCount } from "@/lib/github";
+import { getAgentCommitCount, getCodexPRLabelCount } from "@/lib/github";
 
 const AGENTS = [
   { key: "copilot", name: "copilot-swe-agent[bot]", getCount: (date) => getAgentCommitCount("copilot-swe-agent[bot]", date) },
   { key: "claude", name: "claude", getCount: (date) => getAgentCommitCount("claude", date) },
   { key: "cursor", name: "cursoragent", getCount: (date) => getAgentCommitCount("cursoragent", date) },
-  { key: "codex", name: "Co-authored-by: Codex", getCount: getCodexCommitCount },
+  { key: "codex", name: "label:codex", getCount: getCodexPRLabelCount },
 ];
 
 export async function GET(request) {

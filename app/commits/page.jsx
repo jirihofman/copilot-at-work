@@ -63,10 +63,10 @@ export default function CommitsPage() {
       <div className="max-w-2xl mx-auto">
         <div className="relative overflow-hidden bg-linear-to-br from-blue-600 via-blue-500 to-purple-600 rounded-2xl shadow-2xl p-6 sm:p-8 mb-6 sm:mb-8 text-center">
           <h1 className="text-3xl sm:text-4xl font-black text-white drop-shadow-lg mb-2">
-            Commits by Agents
+            Activity by Agents
           </h1>
           <p className="text-white/80 text-sm sm:text-base">
-            Live data from GitHub — commits authored per day
+            Live data from GitHub — commits authored or labeled PRs per day
           </p>
         </div>
 
@@ -104,7 +104,7 @@ export default function CommitsPage() {
         {/* Results */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 sm:p-6">
           <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
-            Commits on <span className="text-blue-600">{date}</span>
+            Activity on <span className="text-blue-600">{date}</span>
           </h2>
 
           {loading && (
@@ -137,7 +137,7 @@ export default function CommitsPage() {
         </div>
 
         <div className="mt-6 text-center text-xs text-gray-400">
-          <p>Data is fetched live from GitHub commit search.</p>
+          <p>Data is fetched live from GitHub search.</p>
         </div>
       </div>
     </main>

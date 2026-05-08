@@ -53,27 +53,31 @@ const AGENTS = [
   { key: "copilot", name: "copilot-swe-agent[bot]", redisKey: "copilot:commit:history", query: (dateStr) => `author:copilot-swe-agent[bot] author-date:${dateStr}` },
   { key: "claude", name: "claude", redisKey: "claude:commit:history", query: (dateStr) => `author:claude author-date:${dateStr}` },
   { key: "cursor", name: "cursoragent", redisKey: "cursor:commit:history", query: (dateStr) => `author:cursoragent author-date:${dateStr}` },
-  { key: "codex", name: "Co-authored-by: Codex", redisKey: "codex:commit:history", query: (dateStr) => `"Co-authored-by: Codex" author-date:${dateStr}` },
+  { key: "codex", name: "label:codex", redisKey: "codex:pr:history", endpoint: "issues", query: (dateStr) => `is:pr is:merged label:codex merged:${dateStr}` },
 ];
+
+AGENTS.forEach((agent) => {
+  agent.endpoint ||= "commits";
+});
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
- * Fetches the count of commits authored by an agent on a specific date.
+ * Fetches the activity count for an agent on a specific date.
  * Uses GitHub REST search API.
  * @param {Object} agent - Agent config
  * @param {string} dateStr - Date string in YYYY-MM-DD format
- * @returns {Promise<number>} Number of commits for that day
+ * @returns {Promise<number>} Number of activity items for that day
  */
-async function getAgentCommitCountForDate(agent, dateStr) {
+async function getAgentCountForDate(agent, dateStr) {
   const query = encodeURIComponent(agent.query(dateStr));
   const maxAttempts = 3;
 
   try {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      const res = await fetch(`https://api.github.com/search/commits?q=${query}&per_page=1`, {
+      const res = await fetch(`https://api.github.com/search/${agent.endpoint}?q=${query}&per_page=1`, {
         headers: {
           Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
           Accept: "application/vnd.github+json",
@@ -99,7 +103,7 @@ async function getAgentCommitCountForDate(agent, dateStr) {
       throw new Error(`GitHub API error: ${res.status} ${res.statusText}`);
     }
   } catch (error) {
-    console.error(`Error getting commits for ${agent.key} on ${dateStr}:`, error);
+    console.error(`Error getting activity for ${agent.key} on ${dateStr}:`, error);
     throw error;
   }
 }
@@ -126,7 +130,7 @@ async function backfillDate(dateStr) {
     throw new Error(`Cannot backfill future date: ${dateStr}`);
   }
 
-  console.log(`Backfilling commit data for ${dateStr}...`);
+  console.log(`Backfilling activity data for ${dateStr}...`);
 
   // Create data point with end-of-day timestamp for the specified date
   const timestamp = getDailyScore(dateStr);
@@ -134,7 +138,7 @@ async function backfillDate(dateStr) {
   const results = [];
 
   for (const [index, agent] of AGENTS.entries()) {
-    const count = await getAgentCommitCountForDate(agent, dateStr);
+    const count = await getAgentCountForDate(agent, dateStr);
     const dataPoint = {
       date: dateStr,
       count,
@@ -152,7 +156,7 @@ async function backfillDate(dateStr) {
 
   console.log(
     `✓ Successfully stored data point: ${dateStr} - ${results
-      .map((result) => `${result.key}: ${result.count} commits`)
+      .map((result) => `${result.key}: ${result.count} activity items`)
       .join(", ")}`
   );
 
