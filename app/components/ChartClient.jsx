@@ -50,7 +50,7 @@ export default function ChartClient({ copilotData, claudeData, cursorData, codex
         <div className="flex flex-col gap-4 mb-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
-              {chartType === "cumulative" ? "Total Commit Count Over Time" : "Daily Commit Count"}
+              {chartType === "cumulative" ? "Total Activity Count Over Time" : "Daily Activity Count"}
             </h2>
             
             <div className="flex gap-2">
@@ -149,7 +149,7 @@ export default function ChartClient({ copilotData, claudeData, cursorData, codex
               dataKey="codexCount"
               stroke="#111827"
               strokeWidth={2}
-              name={chartType === "cumulative" ? "Codex Total Commits" : "Codex Commits per Day"}
+              name={chartType === "cumulative" ? "Codex Total PRs" : "Codex PRs per Day"}
             />
           </LineChart>
         </ResponsiveContainer>

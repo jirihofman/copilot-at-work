@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import ChartClient from "@/app/components/ChartClient";
 import StatCard from "@/app/components/StatCard";
 import TrendsCard from "@/app/components/TrendsCard";
-import { fetchCopilotCommitData, fetchClaudeCommitData, fetchCursorCommitData, fetchCodexCommitData } from "@/lib/server-actions";
+import { fetchCopilotCommitData, fetchClaudeCommitData, fetchCursorCommitData, fetchCodexPRData } from "@/lib/server-actions";
 import { calculateTrends } from "@/lib/trends";
 
 export const dynamic = "force-dynamic";
@@ -11,12 +11,12 @@ const methodologyItems = [
   {
     title: "Public GitHub search",
     description:
-      "The numbers come from GitHub's public commit search API. Each day the app queries worldwide public commits and asks GitHub for the total count returned by a specific author filter.",
+      "The numbers come from GitHub's public search APIs. Each day the app queries worldwide public activity and asks GitHub for the total count returned by each tracked signal.",
   },
   {
     title: "Tracked signatures",
     description:
-      "Copilot uses author:copilot-swe-agent[bot], Claude uses author:claude, Cursor uses author:cursoragent, and Codex uses the exact \"Co-authored-by: Codex\" commit trailer. Each query is also constrained to a single UTC day with author-date:YYYY-MM-DD.",
+      "Copilot uses author:copilot-swe-agent[bot], Claude uses author:claude, and Cursor uses author:cursoragent with author-date:YYYY-MM-DD. Codex uses merged PRs with label:codex and merged:YYYY-MM-DD.",
   },
   {
     title: "Daily snapshots",
@@ -34,7 +34,7 @@ async function fetchData() {
   const copilotData = await fetchCopilotCommitData({ limit: 365 });
   const claudeData = await fetchClaudeCommitData({ limit: 365 });
   const cursorData = await fetchCursorCommitData({ limit: 365 });
-  const codexData = await fetchCodexCommitData({ limit: 365 });
+  const codexData = await fetchCodexPRData({ limit: 365 });
   return { copilotData, claudeData, cursorData, codexData };
 }
 
@@ -68,7 +68,7 @@ function MethodologyCard() {
         </h2>
         <p className="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300 sm:text-base">
           This site tracks daily commit counts by taking one snapshot per day from GitHub&apos;s public search index.
-          It does not have private access to GitHub or vendor telemetry.
+          Codex is tracked with merged PRs carrying the public codex label. It does not have private access to GitHub or vendor telemetry.
         </p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">

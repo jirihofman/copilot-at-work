@@ -4,7 +4,7 @@ A Next.js application that tracks public GitHub commit activity from Copilot and
 
 ## Features
 
-- 📊 Real-time tracking of Copilot, Claude, Cursor, and Codex commit signals worldwide
+- 📊 Real-time tracking of Copilot, Claude, Cursor commit signals and Codex labeled PRs worldwide
 - 📈 Interactive chart showing commit count over time for all tracked agents
 - 🎨 Multi-line visualization: blue for Copilot, orange for Claude, green for Cursor, black for Codex
 - ⏰ Daily automated updates via cron job
@@ -89,7 +89,7 @@ Cron endpoint that fetches the previous UTC day's commit counts from GitHub (wor
 ## How It Works
 
 1. **Daily Cron Job**: A GitHub Actions cron job runs daily, calling `/api/cron`
-2. **GitHub API**: The endpoint queries GitHub's commit search API for `author:copilot-swe-agent[bot]`, `author:claude`, `author:cursoragent`, and the exact `"Co-authored-by: Codex"` trailer worldwide
+2. **GitHub API**: The endpoint queries GitHub's commit search API for `author:copilot-swe-agent[bot]`, `author:claude`, and `author:cursoragent`, plus GitHub's issue search API for `is:pr is:merged label:codex` worldwide
 3. **Redis Storage**: The counts are stored in Upstash Redis with timestamps (separate keys for each agent)
 4. **Data Visualization**: The homepage fetches all historical data and displays all tracked agents in an interactive chart with different colors
 

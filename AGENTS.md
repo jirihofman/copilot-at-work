@@ -23,15 +23,15 @@ This document provides an overview of the agents used in the `Copilot at Work - 
 - **Chart Color**: Green (#16a34a)
 
 ### `Codex`
-- **Purpose**: Tracks public commits co-authored by Codex.
-- **Integration**: Queries GitHub's commit search API for the exact `"Co-authored-by: Codex"` trailer.
+- **Purpose**: Tracks merged pull requests labeled as Codex.
+- **Integration**: Queries GitHub's issue search API for `is:pr is:merged label:codex`.
 - **Usage**: Data fetched by this agent is stored in Upstash Redis and visualized in the application.
 - **Chart Color**: Black (#111827)
 
 ## How Agents Work
 
 1. **Daily Cron Job**: The `/api/cron` endpoint is triggered daily by a GitHub Actions workflow.
-2. **GitHub API Query**: The endpoint queries GitHub for commit counts matching `copilot-swe-agent[bot]`, `claude`, `cursoragent`, and the Codex co-author trailer.
+2. **GitHub API Query**: The endpoint queries GitHub for commit counts matching `copilot-swe-agent[bot]`, `claude`, and `cursoragent`, plus merged PR counts matching the Codex label.
 3. **Data Storage**: The fetched data is stored in Upstash Redis with a timestamp (separate keys for each agent).
 4. **Visualization**: The application fetches historical data for all tracked agents and displays them in an interactive chart with different colors.
 
