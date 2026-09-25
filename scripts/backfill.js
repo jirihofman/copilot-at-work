@@ -24,6 +24,7 @@
  *   done
  */
 
+import { CODEX_PR_KEY, getCodexPRCount } from "../lib/codex-pr.js";
 import { Redis } from "@upstash/redis";
 import dotenv from 'dotenv';
 import { getDailyScore, getUTCDateString, upsertHistoryDataPoint } from "../lib/commit-history.js";
@@ -53,7 +54,7 @@ const AGENTS = [
   { key: "copilot", name: "copilot-swe-agent[bot]", redisKey: "copilot:commit:history", query: (dateStr) => `author:copilot-swe-agent[bot] author-date:${dateStr}` },
   { key: "claude", name: "claude", redisKey: "claude:commit:history", query: (dateStr) => `author:claude author-date:${dateStr}` },
   { key: "cursor", name: "cursoragent", redisKey: "cursor:commit:history", query: (dateStr) => `author:cursoragent author-date:${dateStr}` },
-  { key: "codex", name: "label:codex", redisKey: "codex:pr:history", endpoint: "issues", query: (dateStr) => `is:pr is:merged label:codex merged:${dateStr}` },
+  { key: "codex", name: "Codex PR signals", redisKey: CODEX_PR_KEY, getCount: getCodexPRCount },
 ];
 
 AGENTS.forEach((agent) => {
@@ -72,6 +73,8 @@ function sleep(ms) {
  * @returns {Promise<number>} Number of activity items for that day
  */
 async function getAgentCountForDate(agent, dateStr) {
+  if (agent.getCount) return agent.getCount(dateStr);
+
   const query = encodeURIComponent(agent.query(dateStr));
   const maxAttempts = 3;
 

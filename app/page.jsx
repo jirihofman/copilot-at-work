@@ -16,12 +16,12 @@ const methodologyItems = [
   {
     title: "Tracked signatures",
     description:
-      "Copilot uses author:copilot-swe-agent[bot], Claude uses author:claude, and Cursor uses author:cursoragent with author-date:YYYY-MM-DD. Codex uses merged PRs with label:codex and merged:YYYY-MM-DD.",
+      "Copilot uses author:copilot-swe-agent[bot], Claude uses author:claude, and Cursor uses author:cursoragent with author-date:YYYY-MM-DD. Codex counts public PRs merged that UTC day with a codex label or a codex/ source branch, counting each PR once.",
   },
   {
     title: "Daily snapshots",
     description:
-      "A cron endpoint runs once per day, stores the count for that day in Upstash Redis, and the chart reads back the stored history rather than recomputing old days on every page load.",
+      "A cron endpoint stores the previous UTC day in Redis. Codex history uses the expanded label-or-branch method in a separate series; dates appear as they are collected or backfilled. The old label-only counts are not mixed into its trends.",
   },
   {
     title: "Important caveat",
@@ -68,7 +68,7 @@ function MethodologyCard() {
         </h2>
         <p className="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300 sm:text-base">
           This site tracks daily commit counts by taking one snapshot per day from GitHub&apos;s public search index.
-          Codex is tracked with merged PRs carrying the public codex label. It does not have private access to GitHub or vendor telemetry.
+          Codex is tracked using merged public PRs with a codex label or a codex/ source branch. These are attribution signals, so custom branches can be missed and manually named branches can add noise. Codex PR counts and the other agents’ commit counts measure different things.
         </p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">

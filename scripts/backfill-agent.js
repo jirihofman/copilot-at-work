@@ -28,6 +28,7 @@
  *   done
  */
 
+import { CODEX_PR_KEY, getCodexPRCount } from "../lib/codex-pr.js";
 import { Redis } from "@upstash/redis";
 import dotenv from 'dotenv';
 import { getDailyScore, getUTCDateString, upsertHistoryDataPoint } from "../lib/commit-history.js";
@@ -74,10 +75,9 @@ const AGENT_CONFIG = {
     query: (dateStr) => `author:cursoragent author-date:${dateStr}`,
   },
   codex: {
-    botName: "label:codex",
-    redisKey: "codex:pr:history",
-    endpoint: "issues",
-    query: (dateStr) => `is:pr is:merged label:codex merged:${dateStr}`,
+    botName: "Codex PR signals",
+    redisKey: CODEX_PR_KEY,
+    getCount: getCodexPRCount,
   },
 };
 
@@ -96,6 +96,8 @@ async function getAgentCountForDate(agentName, dateStr) {
   if (!config) {
     throw new Error(`Unknown agent: ${agentName}. Use 'copilot', 'claude', 'cursor' or 'codex'`);
   }
+
+  if (config.getCount) return config.getCount(dateStr);
 
   const query = encodeURIComponent(config.query(dateStr));
   const maxAttempts = 3;
