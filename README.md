@@ -4,7 +4,7 @@ A Next.js application that tracks public GitHub commit activity from Copilot and
 
 ## Features
 
-- 📊 Real-time tracking of Copilot, Claude, Cursor commit signals and Codex labeled PRs worldwide
+- 📊 Real-time tracking of Copilot, Claude, Cursor commit signals and Codex PR signals worldwide
 - 📈 Interactive chart showing commit count over time for all tracked agents
 - 🎨 Multi-line visualization: blue for Copilot, orange for Claude, green for Cursor, black for Codex
 - ⏰ Daily automated updates via cron job
@@ -89,9 +89,25 @@ Cron endpoint that fetches the previous UTC day's commit counts from GitHub (wor
 ## How It Works
 
 1. **Daily Cron Job**: A GitHub Actions cron job runs daily, calling `/api/cron`
-2. **GitHub API**: The endpoint queries GitHub's commit search API for `author:copilot-swe-agent[bot]`, `author:claude`, and `author:cursoragent`, plus GitHub's issue search API for `is:pr is:merged label:codex` worldwide
+2. **GitHub API**: The endpoint queries GitHub's commit search API for `author:copilot-swe-agent[bot]`, `author:claude`, and `author:cursoragent`, plus two disjoint public PR searches for Codex: `is:pr is:merged is:public merged:YYYY-MM-DD label:codex` and `is:pr is:merged is:public merged:YYYY-MM-DD head:codex/ -label:codex`
 3. **Redis Storage**: The counts are stored in Upstash Redis with timestamps (separate keys for each agent)
 4. **Data Visualization**: The homepage fetches all historical data and displays all tracked agents in an interactive chart with different colors
+
+## Codex methodology
+
+Codex counts merged public PRs carrying either a `codex` label or a `codex/` head branch. The two searches exclude overlap and use the UTC **merge date**. Cron, live counts, and both backfill scripts share `lib/codex-pr.js`. Incomplete or malformed GitHub responses fail the Codex update instead of storing a partial count or zero.
+
+This is a public attribution proxy: manual labels/branch names can add noise, and custom branches or unmarked PRs can be missed. Review-bot participation is excluded because it also matches PRs written with other tools. Codex PR counts are not directly comparable to the other agents' commit counts. See [the investigation and measured results](docs/codex-pr-methodology.md).
+
+The expanded series uses `codex:pr:signals-v2:history`; the old `codex:pr:history` remains untouched. This prevents the methodology change from appearing as a growth spike. On deployment, the Codex chart starts empty until cron or a backfill populates the new series. Rebuild the dates you want to display using:
+
+```bash
+node scripts/backfill-agent.js codex 2026-09-24
+# Or rebuild all dates from a chosen starting date (two search requests per day):
+BACKFILL_SLEEP_SECONDS=10 bash scripts/codex-backfill-loop.sh 2025-05-16
+```
+
+Backfill uses the current search index, so counts can differ from original snapshots. If a search fails or is incomplete, the backfill stops; rerun from that date. No production history is migrated automatically.
 
 ## Security
 

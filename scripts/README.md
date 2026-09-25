@@ -66,9 +66,10 @@ foreach ($date in $dates) {
   ```
   author:copilot-swe-agent[bot] author-date:YYYY-MM-DD
   ```
-  Codex uses merged PRs with the public codex label:
+  Codex sums two disjoint searches for public merged PRs (shared with cron and the live API):
   ```
-  is:pr is:merged label:codex merged:YYYY-MM-DD
+  is:pr is:merged is:public merged:YYYY-MM-DD label:codex
+  is:pr is:merged is:public merged:YYYY-MM-DD head:codex/ -label:codex
   ```
 3. **Data Storage**: Stores the count in Redis with an end-of-day timestamp (23:59:59.999) for the specified date
 4. **Storage Semantics**: Replaces any existing record for the same day instead of appending duplicates
@@ -111,3 +112,7 @@ Backfill failed: Cannot backfill future date: 2026-01-01
 
 ### GitHub API Rate Limiting
 If you encounter rate limiting errors, add longer delays between requests in your loop.
+
+### Codex history migration
+
+Both backfill scripts write the expanded signal to `codex:pr:signals-v2:history`. The old label-only `codex:pr:history` is preserved and is not combined with the new series. Rebuild the desired history with `BACKFILL_SLEEP_SECONDS=10 bash scripts/codex-backfill-loop.sh 2025-05-16` (or choose a later start date). Each day uses two search requests. An incomplete, malformed, rate-limited, or failed search stops the backfill before writing that Codex day; rerun from the failed date. See [methodology and investigation](../docs/codex-pr-methodology.md).

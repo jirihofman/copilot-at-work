@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import { redis, COPILOT_COMMIT_KEY, CLAUDE_COMMIT_KEY, CURSOR_COMMIT_KEY, CODEX_PR_KEY } from "@/lib/redis";
 import { getDailyScore, getPreviousUTCDateString, upsertHistoryDataPoint } from "@/lib/commit-history";
-import { getAgentCommitCount, getCodexPRLabelCount } from "@/lib/github";
+import { getAgentCommitCount } from "@/lib/github";
+import { getCodexPRCount } from "@/lib/codex-pr";
 import { cronRateLimiter } from "@/lib/rate-limit";
 
 const AGENTS = [
   { key: "copilot", name: "copilot-swe-agent[bot]", redisKey: COPILOT_COMMIT_KEY, getCount: (date) => getAgentCommitCount("copilot-swe-agent[bot]", date) },
   { key: "claude", name: "claude", redisKey: CLAUDE_COMMIT_KEY, getCount: (date) => getAgentCommitCount("claude", date) },
   { key: "cursor", name: "cursoragent", redisKey: CURSOR_COMMIT_KEY, getCount: (date) => getAgentCommitCount("cursoragent", date) },
-  { key: "codex", name: "label:codex", redisKey: CODEX_PR_KEY, getCount: getCodexPRLabelCount },
+  { key: "codex", name: "Codex PR signals", redisKey: CODEX_PR_KEY, getCount: getCodexPRCount },
 ];
 
 export async function GET(request) {
